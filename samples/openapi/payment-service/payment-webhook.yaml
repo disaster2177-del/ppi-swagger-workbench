@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Payment Webhooks
+  version: 1.0.0
+  description: Manage endpoints that receive payment events.
+servers:
+  - url: https://payments.example.com
+paths:
+  /webhook-endpoints:
+    get:
+      tags: [Webhooks]
+      summary: List webhook endpoints
+      operationId: listWebhooks
+      responses:
+        '200': { description: Endpoints }
+    post:
+      tags: [Webhooks]
+      summary: Register a webhook endpoint
+      operationId: createWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, events]
+              properties:
+                url: { type: string, format: uri, example: 'https://merchant.example.com/hooks/payments' }
+                events:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    enum: [payment.created, payment.captured, payment.failed, refund.created, dispute.opened]
+                apiVersion: { type: string, enum: ['2024-01-01', '2025-06-01'], default: '2025-06-01' }
+                enabled: { type: boolean, default: true }
+                description: { type: string, maxLength: 120 }
+      responses:
+        '201': { description: Registered }
+  /webhook-endpoints/{webhookId}:
+    parameters:
+      - name: webhookId
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [Webhooks]
+      summary: Remove a webhook endpoint
+      operationId: deleteWebhook
+      responses:
+        '204': { description: Removed }
+  /webhook-endpoints/{webhookId}/test:
+    post:
+      tags: [Webhooks]
+      summary: Send a test event
+      operationId: testWebhook
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: event
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [payment.created, payment.captured, payment.failed, refund.created, dispute.opened]
+      responses:
+        '202': { description: Queued }

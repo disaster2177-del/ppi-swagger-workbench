@@ -1,0 +1,90 @@
+openapi: 3.1.0
+info:
+  title: Payment API v2
+  version: 2.0.0-beta
+  description: Payment intents with confirmation steps.
+servers:
+  - url: https://payments.example.com/{version}
+    variables:
+      version:
+        default: v2
+paths:
+  /payment-intents:
+    post:
+      tags: [Payment intents]
+      summary: Create a payment intent
+      operationId: createIntent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, currency]
+              properties:
+                amount: { type: integer, minimum: 50 }
+                currency: { type: string, enum: [usd, eur, gbp, inr] }
+                confirm: { type: boolean, default: false }
+                paymentMethodTypes:
+                  type: array
+                  items: { type: string, enum: [card, upi, sepa_debit, ideal] }
+                  default: [card]
+                statementDescriptor: { type: [string, 'null'], maxLength: 22 }
+                shipping:
+                  type: object
+                  properties:
+                    name: { type: string }
+                    phone: { type: string }
+                    carrier: { type: string, enum: [dhl, fedex, ups, bluedart] }
+      responses:
+        '200': { description: Intent created }
+    get:
+      tags: [Payment intents]
+      summary: List payment intents
+      operationId: listIntents
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [requires_payment_method, requires_confirmation, processing, succeeded, canceled]
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200': { description: Intents }
+  /payment-intents/{intentId}/confirm:
+    post:
+      tags: [Payment intents]
+      summary: Confirm a payment intent
+      operationId: confirmIntent
+      parameters:
+        - name: intentId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                returnUrl: { type: string, format: uri }
+                offSession: { type: boolean }
+      responses:
+        '200': { description: Confirmed }
+  /payment-intents/{intentId}:
+    delete:
+      tags: [Payment intents]
+      summary: Cancel a payment intent
+      operationId: cancelIntent
+      parameters:
+        - name: intentId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: cancellationReason
+          in: query
+          schema: { type: string, enum: [duplicate, fraudulent, requested_by_customer, abandoned] }
+      responses:
+        '204': { description: Cancelled }

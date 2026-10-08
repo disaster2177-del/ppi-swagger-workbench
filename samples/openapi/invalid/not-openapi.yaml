@@ -1,0 +1,6 @@
+# Valid YAML, but not an OpenAPI or Swagger definition.
+name: build-pipeline
+stages:
+  - lint
+  - test
+  - deploy

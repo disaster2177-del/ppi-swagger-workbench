@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: User API
+  version: 1.0.0
+  description: Accounts, roles and status for platform users.
+servers:
+  - url: https://api.example.com
+paths:
+  /users:
+    get:
+      tags: [Users]
+      summary: List users
+      operationId: listUsers
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/UserStatus' }
+        - name: role
+          in: query
+          schema: { type: string, enum: [admin, editor, viewer] }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+      responses:
+        '200': { description: Users }
+    post:
+      tags: [Users]
+      summary: Create a user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewUser' }
+      responses:
+        '201': { description: Created }
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: User ID
+        schema: { type: integer, minimum: 1 }
+    get:
+      tags: [Users]
+      summary: Get a user
+      operationId: getUser
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/UserStatus' }
+      responses:
+        '200': { description: The user }
+    put:
+      tags: [Users]
+      summary: Replace a user
+      operationId: replaceUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewUser' }
+      responses:
+        '200': { description: Replaced }
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      operationId: deleteUser
+      responses:
+        '204': { description: Deleted }
+components:
+  schemas:
+    UserStatus:
+      type: string
+      enum: [active, inactive, pending]
+    NewUser:
+      type: object
+      required: [email, name, status]
+      properties:
+        name: { type: string, minLength: 2, example: Asha Rao }
+        email: { type: string, format: email }
+        status: { $ref: '#/components/schemas/UserStatus' }
+        role: { type: string, enum: [admin, editor, viewer], default: viewer }
+        age: { type: integer, minimum: 13, maximum: 120 }
+        newsletter: { type: boolean, default: false }
+        address:
+          type: object
+          properties:
+            street: { type: string }
+            city: { type: string }
+            country: { type: string, enum: [IN, US, GB] }
+        skills:
+          type: array
+          items: { type: string }

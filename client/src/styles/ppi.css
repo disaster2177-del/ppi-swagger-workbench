@@ -1,0 +1,560 @@
+/* ======================================================================
+ * PPI: the radar pane, plus its controls and inspector when they sit in
+ * the app sidebars (.ppi-panel). Chrome uses the shared tokens; the scope
+ * itself keeps the fixed dark instrument palette (--scope-*).
+ * ==================================================================== */
+
+.ppi-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: var(--scope-bg);
+}
+
+.ppi-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-xs);
+}
+
+.ppi-status-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.status-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.status-items .stat {
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.status-items b {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-items .warn,
+.ppi-panel .warn {
+  color: var(--warn);
+}
+
+.pill {
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.pill.ok {
+  color: var(--good);
+}
+.pill.pending {
+  color: var(--warn);
+}
+.pill.bad {
+  color: var(--bad);
+}
+
+.demo-note {
+  color: var(--warn);
+  letter-spacing: 0.03em;
+}
+
+.ppi-scope-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---------------------------------------------------------------- scope */
+.scope {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at center, var(--scope-glow) 0%, var(--scope-bg) 70%);
+  color: var(--scope-text);
+}
+
+.scope svg {
+  display: block;
+  cursor: crosshair;
+  user-select: none;
+}
+
+.scope-edge {
+  fill: none;
+  stroke: #2b5a6e;
+  stroke-width: 1.5;
+}
+
+.range-rings circle {
+  fill: none;
+  stroke: rgba(52, 211, 153, 0.18);
+  stroke-width: 1;
+}
+
+.range-rings line {
+  stroke: rgba(52, 211, 153, 0.08);
+  stroke-width: 1;
+}
+
+.range-rings text {
+  fill: rgba(52, 211, 153, 0.55);
+  font: 10px var(--font-mono);
+}
+
+.bearing-scale line {
+  stroke: #3f6f84;
+  stroke-width: 1;
+}
+
+.bearing-scale line.major {
+  stroke: var(--scope-ink);
+  stroke-width: 1.5;
+}
+
+.bearing-scale text {
+  fill: var(--scope-ink);
+  font: 11px var(--font-mono);
+}
+
+.sweep path {
+  fill: var(--scope-accent);
+}
+
+.sweep line {
+  stroke: rgba(52, 211, 153, 0.6);
+  stroke-width: 1.5;
+}
+
+.ownship path {
+  fill: #e0f7ff;
+  stroke: #05131c;
+  stroke-width: 1;
+}
+
+.ownship .heading-line {
+  stroke: rgba(224, 247, 255, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+
+.ownship .leader {
+  stroke: #e0f7ff;
+  stroke-width: 1.5;
+}
+
+.obj {
+  cursor: pointer;
+}
+
+.obj .hit {
+  fill: transparent;
+}
+
+.hit-stroke {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 10;
+}
+
+.obj-label {
+  font: 11px var(--font-mono);
+  paint-order: stroke;
+  stroke: #03080c;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.selection {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.scope-warning {
+  fill: var(--scope-warn);
+  font: 12px var(--font-mono);
+}
+
+.scope-overlay {
+  position: absolute;
+  font: 11px/1.6 var(--font-mono);
+  color: var(--scope-ink);
+  pointer-events: none;
+  background: var(--scope-panel);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scope-overlay b {
+  color: var(--scope-text);
+}
+
+.scope-overlay.top-left {
+  top: 10px;
+  left: 10px;
+}
+
+.scope-overlay.top-right {
+  top: 10px;
+  right: 10px;
+  text-align: right;
+}
+
+.scope-overlay.bottom-left {
+  bottom: 10px;
+  left: 10px;
+}
+
+.scope-overlay.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  max-width: 260px;
+}
+
+.engine-tag {
+  color: var(--scope-accent);
+}
+
+.alerts-title {
+  color: var(--scope-ink);
+}
+
+.alerts-title.active {
+  color: var(--scope-bad);
+  font-weight: 700;
+}
+
+.alert-row {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zone-alert-ring {
+  fill: none;
+  stroke: var(--scope-bad);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  animation: zone-alert 1.2s ease-in-out infinite;
+}
+
+@keyframes zone-alert {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.scope-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--scope-ink);
+  font-family: var(--font-mono);
+}
+
+/* ---------------------------------------------------------------- PPI panels inside the app sidebars */
+.ppi-panel .panel {
+  padding: 12px 14px;
+  min-height: 0;
+}
+
+.ppi-panel .panel h3 {
+  margin: 16px 0 7px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ppi-panel .panel section:first-child h3 {
+  margin-top: 0;
+}
+
+.ppi-panel .btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 8px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.ppi-panel .details .btn-row {
+  border: 0;
+  background: none;
+  padding: 0;
+  gap: 6px;
+}
+
+.ppi-panel .btn-row button {
+  min-height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ppi-panel .details .btn-row button {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+
+.ppi-panel .btn-row button:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.ppi-panel .btn-row button.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-1), inset 0 0 0 1px var(--border);
+}
+
+.ppi-panel label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--fs-md);
+}
+
+.ppi-panel label.check select {
+  margin-left: auto;
+  min-height: 26px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.ppi-panel input[type='checkbox'] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+}
+
+.ppi-panel .count {
+  margin-left: auto;
+  color: var(--muted);
+  font: var(--fs-xs) var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 6px;
+  flex: none;
+  vertical-align: baseline;
+}
+
+.swatch.big {
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+}
+
+.ppi-panel .engine-hint,
+.ppi-panel .hint {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+
+.ppi-panel .hint {
+  margin-top: 16px;
+}
+
+.ppi-panel .empty {
+  color: var(--muted);
+  padding: 12px 0;
+}
+
+.ppi-panel .search {
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 9px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.ppi-panel .search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+.ppi-panel .list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ppi-panel .table-wrap {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.ppi-panel .table-wrap.small {
+  max-height: 260px;
+}
+
+.ppi-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ppi-panel th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  text-align: left;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ppi-panel th.sorted {
+  color: var(--accent);
+}
+
+.ppi-panel td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.ppi-panel tbody tr {
+  cursor: pointer;
+}
+
+.ppi-panel tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.ppi-panel tbody tr.selected {
+  background: var(--accent-soft);
+}
+
+.ppi-panel .details header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ppi-panel .details h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
+.ppi-panel .details .sub {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.ppi-panel .kv {
+  margin: 0;
+}
+
+.ppi-panel .kv > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ppi-panel .kv dt {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.ppi-panel .kv dd {
+  margin: 0;
+  font: var(--fs-sm) var(--font-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ppi-panel .raw {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px;
+  font: var(--fs-xs) / 1.45 var(--font-mono);
+  overflow: auto;
+  max-height: 320px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.ppi-panel .error-item {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+
+.ppi-panel .error-head {
+  display: flex;
+  gap: 10px;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.scope .warn {
+  color: var(--scope-warn);
+}

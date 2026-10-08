@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: Payment API
+  version: 1.4.0
+  description: Create, look up and refund card and bank payments.
+servers:
+  - url: https://payments.example.com
+tags:
+  - name: Payments
+    description: Charges against a customer's payment method
+  - name: Refunds
+    description: Money returned to the customer
+paths:
+  /payments:
+    get:
+      tags: [Payments]
+      summary: List payments
+      operationId: listPayments
+      parameters:
+        - name: status
+          in: query
+          description: Only payments in this state
+          schema:
+            type: string
+            enum: [pending, authorized, captured, failed, refunded]
+        - name: currency
+          in: query
+          schema: { $ref: '#/components/schemas/Currency' }
+        - name: createdAfter
+          in: query
+          schema: { type: string, format: date }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: X-Request-ID
+          in: header
+          description: Correlation id echoed in logs
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: A page of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Payment' }
+    post:
+      tags: [Payments]
+      summary: Create a payment
+      operationId: createPayment
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Unique key so a retried request is not charged twice
+          schema: { type: string, minLength: 8, maxLength: 64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewPayment' }
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Payment' }
+        '422': { description: Validation failed }
+  /payments/{paymentId}:
+    parameters:
+      - name: paymentId
+        in: path
+        required: true
+        description: Payment identifier
+        schema: { type: string, pattern: '^pay_[A-Za-z0-9]{6,}$', example: pay_7Hc2Lm9Q }
+    get:
+      tags: [Payments]
+      summary: Get a payment
+      operationId: getPayment
+      responses:
+        '200':
+          description: The payment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Payment' }
+        '404': { description: Not found }
+    patch:
+      tags: [Payments]
+      summary: Update payment metadata
+      operationId: updatePayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string, maxLength: 200 }
+                metadata: { $ref: '#/components/schemas/Metadata' }
+      responses:
+        '200': { description: Updated }
+  /payments/{paymentId}/capture:
+    post:
+      tags: [Payments]
+      summary: Capture an authorized payment
+      operationId: capturePayment
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  minimum: 1
+                  description: Amount to capture in minor units. Leave empty to capture the full amount.
+      responses:
+        '200': { description: Captured }
+  /payments/{paymentId}/refunds:
+    post:
+      tags: [Refunds]
+      summary: Refund a payment
+      operationId: refundPayment
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                amount: { type: integer, minimum: 1, description: Minor units. Empty refunds everything. }
+                reason:
+                  type: string
+                  enum: [duplicate, fraudulent, requested_by_customer, other]
+                note: { type: string, maxLength: 500 }
+                notifyCustomer: { type: boolean, default: true }
+      responses:
+        '201': { description: Refund created }
+components:
+  schemas:
+    Currency:
+      type: string
+      enum: [USD, EUR, GBP, INR, JPY]
+      default: USD
+    Metadata:
+      type: object
+      description: Your own key/value data, returned with the payment
+      additionalProperties: { type: string }
+    Address:
+      type: object
+      required: [line1, city, country]
+      properties:
+        line1: { type: string, example: 221B Baker Street }
+        line2: { type: string }
+        city: { type: string, example: London }
+        postalCode: { type: string, example: NW1 6XE }
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+          enum: [US, GB, IN, DE, FR, JP]
+    Card:
+      type: object
+      title: Card
+      required: [number, expMonth, expYear, cvc]
+      properties:
+        type: { type: string, enum: [card] }
+        number: { type: string, pattern: '^[0-9]{12,19}$', example: '4242424242424242' }
+        expMonth: { type: integer, minimum: 1, maximum: 12, example: 12 }
+        expYear: { type: integer, minimum: 2024, example: 2030 }
+        cvc: { type: string, format: password, minLength: 3, maxLength: 4 }
+    BankTransfer:
+      type: object
+      title: Bank transfer
+      required: [iban]
+      properties:
+        type: { type: string, enum: [bank_transfer] }
+        iban: { type: string, example: GB82WEST12345698765432 }
+        accountHolder: { type: string }
+    NewPayment:
+      type: object
+      required: [amount, currency, method, customer]
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          description: Amount in minor units (cents, paise)
+          example: 2500
+        currency: { $ref: '#/components/schemas/Currency' }
+        captureMode:
+          type: string
+          enum: [automatic, manual]
+          default: automatic
+        method:
+          description: How the customer pays
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - $ref: '#/components/schemas/BankTransfer'
+        customer:
+          type: object
+          required: [email]
+          properties:
+            email: { type: string, format: email }
+            name: { type: string }
+            billingAddress: { $ref: '#/components/schemas/Address' }
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [sku, quantity]
+            properties:
+              sku: { type: string, example: SKU-1001 }
+              quantity: { type: integer, minimum: 1, default: 1 }
+              unitPrice: { type: integer, minimum: 0 }
+        channels:
+          type: array
+          description: Where the payment was taken
+          uniqueItems: true
+          items: { type: string, enum: [web, ios, android, pos] }
+        tags:
+          type: array
+          items: { type: string }
+        metadata: { $ref: '#/components/schemas/Metadata' }
+    Payment:
+      allOf:
+        - $ref: '#/components/schemas/NewPayment'
+        - type: object
+          properties:
+            id: { type: string, readOnly: true }
+            status:
+              type: string
+              enum: [pending, authorized, captured, failed, refunded]
+            createdAt: { type: string, format: date-time, readOnly: true }
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []

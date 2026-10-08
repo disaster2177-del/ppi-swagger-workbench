@@ -1,0 +1,18 @@
+{
+  "name": "@workbench/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Code shared by the server and the browser: OpenAPI/YAML parsing, validation, form schema handling, request building and settings.",
+  "exports": {
+    "./openapi": "./openapi/index.js",
+    "./workbench": "./workbench/index.js",
+    "./settings": "./settings/index.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "yaml": "^2.8.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "ppi-api-workbench",
+  "version": "2.0.0",
+  "private": true,
+  "description": "One application for the naval radar PPI scope (Kafka + MongoDB) and project-based OpenAPI/Swagger YAML management with dynamic API forms.",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c green,cyan \"npm --workspace server run dev\" \"npm --workspace client run dev\"",
+    "build": "npm --workspace client run build",
+    "build:demo": "npm --workspace client run build:demo",
+    "start": "npm --workspace server start",
+    "simulate": "npm --workspace server run simulate",
+    "seed": "npm --workspace server run seed",
+    "infra": "docker compose up -d kafka mongo",
+    "test": "npm --workspace shared test && npm --workspace server test && npm --workspace client test"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

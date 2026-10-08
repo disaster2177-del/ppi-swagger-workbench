@@ -1,0 +1,13 @@
+{
+  "description": "Example projects for `npm run seed`. Each key is a folder next to this file; every .yaml/.yml file in it is uploaded to that project.",
+  "projects": {
+    "payment-service": {
+      "name": "Payment Service",
+      "description": "Card and bank payments, intents, admin and webhooks"
+    },
+    "user-service": {
+      "name": "User Service",
+      "description": "Platform user accounts"
+    }
+  }
+}

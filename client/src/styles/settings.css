@@ -1,0 +1,229 @@
+/* ======================================================================
+ * Settings page
+ * ==================================================================== */
+.settings {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 20px 48px;
+}
+
+.settings-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 -20px 16px;
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-head h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 760px);
+  gap: 24px;
+  justify-content: center;
+}
+
+.settings-nav {
+  position: sticky;
+  top: 86px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.settings-nav a:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  scroll-margin-top: 86px;
+}
+
+.settings-section h2 {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.settings-section h3 {
+  margin-top: 8px;
+}
+
+.settings-section.subtle {
+  background: transparent;
+}
+
+.env-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.env-tabs > button[role='tab'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+
+.env-tabs > button[role='tab'].active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.env-tabs .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--good);
+}
+
+.url-example {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--code-bg);
+}
+
+.url-example code {
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.header-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.header-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+}
+
+.header-row .switch {
+  min-height: 28px;
+}
+
+.choice-cards {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.choice-cards legend {
+  margin-bottom: 8px;
+}
+
+.choice {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 11px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.choice input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.choice > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: var(--fs-sm);
+}
+
+.choice.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (max-width: 900px) {
+  .settings {
+    padding-inline: 16px;
+    overflow: visible;
+  }
+  .settings-head {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    top: var(--nav-h);
+  }
+  .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .choice-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .header-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .header-row > .field:nth-of-type(2) {
+    grid-column: 2 / 3;
+  }
+}

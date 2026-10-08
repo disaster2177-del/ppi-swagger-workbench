@@ -1,0 +1,127 @@
+swagger: '2.0'
+info:
+  title: Payment Admin
+  version: 0.9.2
+  description: Back-office operations (Swagger 2.0 definition).
+host: admin.payments.example.com
+basePath: /admin
+schemes: [https]
+consumes: [application/json]
+produces: [application/json]
+securityDefinitions:
+  apiKey:
+    type: apiKey
+    in: header
+    name: X-Admin-Key
+security:
+  - apiKey: []
+paths:
+  /merchants:
+    get:
+      tags: [Merchants]
+      summary: Search merchants
+      operationId: searchMerchants
+      parameters:
+        - name: q
+          in: query
+          type: string
+          description: Name or merchant id
+        - name: risk
+          in: query
+          type: string
+          enum: [low, medium, high]
+        - name: countries
+          in: query
+          type: array
+          items: { type: string, enum: [US, GB, IN, DE] }
+          collectionFormat: multi
+      responses:
+        '200': { description: Matches }
+    post:
+      tags: [Merchants]
+      summary: Onboard a merchant
+      operationId: createMerchant
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema: { $ref: '#/definitions/Merchant' }
+      responses:
+        '201': { description: Created }
+  /merchants/{merchantId}:
+    put:
+      tags: [Merchants]
+      summary: Replace merchant details
+      operationId: replaceMerchant
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema: { $ref: '#/definitions/Merchant' }
+      responses:
+        '200': { description: Replaced }
+    delete:
+      tags: [Merchants]
+      summary: Offboard a merchant
+      operationId: deleteMerchant
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          type: string
+      responses:
+        '204': { description: Deleted }
+  /merchants/{merchantId}/documents:
+    post:
+      tags: [Merchants]
+      summary: Upload a KYC document
+      operationId: uploadDocument
+      consumes: [multipart/form-data]
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          type: string
+        - name: kind
+          in: formData
+          required: true
+          type: string
+          enum: [incorporation, tax_id, bank_statement, identity]
+        - name: file
+          in: formData
+          required: true
+          type: file
+      responses:
+        '201': { description: Uploaded }
+definitions:
+  Merchant:
+    type: object
+    required: [legalName, category, payoutSchedule]
+    properties:
+      legalName: { type: string, example: Acme Traders Ltd }
+      displayName: { type: string }
+      category:
+        type: string
+        enum: [retail, travel, food, digital_goods, services]
+      payoutSchedule:
+        type: string
+        enum: [daily, weekly, monthly]
+        default: weekly
+      website: { type: string, format: uri }
+      contacts:
+        type: array
+        items:
+          type: object
+          required: [email, role]
+          properties:
+            email: { type: string, format: email }
+            role: { type: string, enum: [owner, finance, support] }
+      settings:
+        type: object
+        properties:
+          autoCapture: { type: boolean, default: true }
+          maxTicketSize: { type: number, minimum: 0, example: 5000 }
