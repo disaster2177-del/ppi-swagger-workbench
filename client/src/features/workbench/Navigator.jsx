@@ -18,7 +18,8 @@ export function YamlFileList({ wb, onDropFiles }) {
     return n ? wb.yamlFiles.filter((f) => [f.fileName, f.title, f.apiVersion].some((v) => String(v ?? '').toLowerCase().includes(n))) : wb.yamlFiles;
   }, [wb.yamlFiles, q]);
 
-  const dropProps = wb.projectId
+  // Drop-to-upload only where uploading is allowed (onDropFiles given).
+  const dropProps = wb.projectId && onDropFiles
     ? {
         onDragOver: (e) => {
           if ([...(e.dataTransfer?.types ?? [])].includes('Files')) {
@@ -48,7 +49,15 @@ export function YamlFileList({ wb, onDropFiles }) {
         <p className="nav-empty">Select a project to see its YAML files.</p>
       ) : wb.yamlStatus === 'ready' && !wb.yamlFiles.length ? (
         <p className="nav-empty">
-          No YAML files in this project yet. Use <strong>Upload YAML</strong> or drop files here.
+          {onDropFiles ? (
+            <>
+              No YAML files in this project yet. Use <strong>Upload YAML</strong> or drop files here.
+            </>
+          ) : (
+            <>
+              No YAML files in this project yet. Upload them on the <strong>Swagger Only</strong> page.
+            </>
+          )}
         </p>
       ) : files.length === 0 && q ? (
         <p className="nav-empty">No YAML file matches “{q}”.</p>

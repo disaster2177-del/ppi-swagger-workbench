@@ -25,17 +25,17 @@ Both share one shell, one dark theme, one set of components and one Express serv
 
 **Projects → YAML files → APIs → form.**
 
-1. Pick a project, create one, or use **Load example projects**. Projects are records in this browser's workspace, never hardcoded.
-2. **Upload YAML** stays disabled until a project is selected. It accepts several files at once, or you can drop them on the YAML list.
+1. Pick a project, or (on *Swagger Only*) create one or use **Load example projects**. Projects are records in this browser's workspace, never hardcoded.
+2. On the *Swagger Only* page, **Upload YAML** stays disabled until a project is selected. It accepts several files at once, or you can drop them on the YAML list.
 3. Each file is checked one by one: file type, size, YAML syntax (with line and column), OpenAPI/Swagger structure, and resolvable `$ref`s. Then its endpoints are extracted. Valid files are saved in this browser. Invalid files are not saved, and an upload report shows which files succeeded and why the others failed. A full browser storage is reported per file and leaves the other files intact.
 4. Changing the project refreshes the YAML list to that project's files only.
 5. Selecting a YAML file parses it and lists its APIs, grouped by tag, with coloured method badges. Both lists are searchable: files by name or title; APIs by path, method, summary, operationId or tag.
 6. Selecting an API renders its form on the right.
 
-**Two ways to view a YAML file** (switch in the workbench header, remembered per view mode):
+**Each view has one job:**
 
-- **Swagger UI** (default on *Swagger Only*): the official Swagger UI (`swagger-ui-dist`, in its dark mode) renders the file with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section (every schema in `components.schemas` / `definitions`, click one to expand it). Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
-- **Forms** (default on *Side by Side*): the compact API list and generated forms described below.
+- **Swagger Only** is where you **create projects and upload YAML files** (Upload YAML, drag and drop, Manage projects, Load example projects, New project in the sidebar). The selected file is shown in the official Swagger UI (`swagger-ui-dist`, in its dark mode) with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
+- **Side by Side** is for browsing and running APIs next to the PPI: pick a project and a YAML file, then an API, and run it from the generated **form** described below. There is no upload or project creation here; when a project is empty, a button takes you to Swagger Only.
 
 **Dynamic forms.** Everything is read from the YAML. Nothing about a particular API is in the code.
 

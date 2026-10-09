@@ -54,9 +54,6 @@ function Shell() {
   const [narrowLeft, setNarrowLeft] = useState(false);
   const [narrowRight, setNarrowRight] = useState(false);
   const [ratio, setRatio] = usePref('splitRatio', 50);
-  // Swagger UI by default on the Swagger Only page, the compact forms in Side by Side.
-  const [styleSwaggerOnly, setStyleSwaggerOnly] = usePref('wbStyle.swagger', 'swagger');
-  const [styleSplit, setStyleSplit] = usePref('wbStyle.split', 'forms');
   const [leftTab, setLeftTab] = useState('scope');
   const [rightTab, setRightTab] = useState('objects');
 
@@ -115,8 +112,8 @@ function Shell() {
       wb={wb}
       settings={settings}
       onOpenSettings={openSettings}
-      viewStyle={view === 'swagger' ? styleSwaggerOnly : styleSplit}
-      onViewStyle={view === 'swagger' ? setStyleSwaggerOnly : setStyleSplit}
+      variant={view === 'swagger' ? 'swagger' : 'forms'}
+      onOpenSwagger={() => chooseMode('swagger')}
     />
   );
 
@@ -150,7 +147,7 @@ function Shell() {
               <ScopeControls {...ppi.controlsProps} />
             </div>
           ) : (
-            <ProjectsPanel wb={wb} />
+            <ProjectsPanel wb={wb} canCreate={view === 'swagger'} />
           )}
         </Sidebar>
 

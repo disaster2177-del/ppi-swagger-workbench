@@ -2,8 +2,8 @@ import { useRef, useState } from 'react';
 import { Badge, Button, ConfirmDialog, EmptyState, Icon, MethodBadge, StatusCode, formatBytes, timeAgo } from '../../ui/index.jsx';
 import { ProjectForm } from './ProjectDialogs.jsx';
 
-/** Left sidebar: projects as entities, with counts and quick switching. */
-export function ProjectsPanel({ wb }) {
+/** Left sidebar: projects as entities, with counts and quick switching. New projects only where canCreate (Swagger Only). */
+export function ProjectsPanel({ wb, canCreate }) {
   return (
     <div className="side-panel">
       <section>
@@ -11,7 +11,7 @@ export function ProjectsPanel({ wb }) {
         {wb.projectsStatus === 'loading' && !wb.projects.length ? (
           <p className="muted">Loading…</p>
         ) : !wb.projects.length ? (
-          <p className="muted">No projects yet. Create one below.</p>
+          <p className="muted">{canCreate ? 'No projects yet. Create one below.' : 'No projects yet. Create one on the Swagger Only page.'}</p>
         ) : (
           <ul className="side-list">
             {wb.projects.map((p) => (
@@ -35,10 +35,12 @@ export function ProjectsPanel({ wb }) {
           </ul>
         )}
       </section>
-      <details className="disclosure side-new">
-        <summary>New project</summary>
-        <ProjectForm submitLabel="Create project" onSubmit={(d) => wb.createProject(d)} />
-      </details>
+      {canCreate && (
+        <details className="disclosure side-new">
+          <summary>New project</summary>
+          <ProjectForm submitLabel="Create project" onSubmit={(d) => wb.createProject(d)} />
+        </details>
+      )}
       {wb.source && <StoragePanel wb={wb} />}
     </div>
   );
