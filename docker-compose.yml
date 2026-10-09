@@ -10,7 +10,7 @@
 # these containers. MongoDB keeps the PPI history and the shared Settings.
 services:
   kafka:
-    image: apache/kafka:3.9.0
+    image: ${KAFKA_IMAGE:-apache/kafka:3.9.0}
     container_name: kafka
     restart: unless-stopped
     ports:
@@ -38,7 +38,7 @@ services:
       retries: 10
 
   mongo:
-    image: mongo:7
+    image: ${MONGO_IMAGE:-mongo:7.0}
     container_name: mongo
     restart: unless-stopped
     ports:
@@ -48,7 +48,12 @@ services:
       - mongo-data:/data/db
 
   app:
-    build: .
+    # Built locally (docker compose build) or loaded from the offline bundle (docker load).
+    image: ppi-workbench:${APP_VERSION:-latest}
+    build:
+      context: .
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
     container_name: ppi-workbench
     restart: unless-stopped
     depends_on:
@@ -85,7 +90,8 @@ services:
       retries: 5
 
   simulator:
-    build: .
+    # Same image as the app.
+    image: ppi-workbench:${APP_VERSION:-latest}
     profiles: ["sim"]
     restart: unless-stopped
     depends_on:
@@ -96,7 +102,7 @@ services:
     command: ["node", "scripts/simulator.js"]
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: provectuslabs/kafka-ui:v0.7.2
     profiles: ["tools"]
     depends_on:
       - kafka

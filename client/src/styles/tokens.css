@@ -53,8 +53,9 @@
   --scope-warn: #ffb74d;
   --scope-bad: #ff5252;
 
-  --font-ui: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Fonts installed on each user's PC (no web fonts, so it works offline): Segoe UI on Windows, Red Hat Text / DejaVu on Linux. */
+  --font-ui: 'IBM Plex Sans', 'Red Hat Text', 'Segoe UI', system-ui, -apple-system, Roboto, 'DejaVu Sans', 'Liberation Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Red Hat Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', 'Liberation Mono', monospace;
   --fs-xs: 11px;
   --fs-sm: 12.5px;
   --fs-md: 13.5px;

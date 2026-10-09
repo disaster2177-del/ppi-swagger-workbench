@@ -125,6 +125,8 @@ The PPI endpoints (`/api/geometries`, `/api/ingest`, …) are unchanged; see [do
 
 ## Run it
 
+**Offline / air-gapped RHEL server:** see [docs/OFFLINE-RHEL.md](docs/OFFLINE-RHEL.md). Build one bundle on a machine with internet (`./scripts/offline/make-bundle.sh`), copy it over, run `./install.sh`. The app has no runtime internet dependencies (no CDNs, no web fonts).
+
 **On a VM (Docker):** see [docs/DEPLOY.md](docs/DEPLOY.md). In short: `cp .env.example .env`, set `SETTINGS_SECRET_KEY`, then `docker compose up -d --build` and open `http://<vm-address>:4000`.
 
 **For development** (Node 20+, Docker for Kafka and MongoDB):
