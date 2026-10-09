@@ -9,8 +9,8 @@
  *   endpoints: listByYamlFile(yamlFileId) replaceForYamlFile(yamlFileId, projectId, endpoints)
  *              removeByYamlFile(yamlFileId) removeByProject(projectId)
  *
- * Implementations: server/src/workbench/mongoStore.js (MongoDB),
- * client/src/services/artifactStore.js (hosted demo) and MemoryStore below (tests).
+ * Implementations: localStorageStore.js (each user's browser, the normal setup)
+ * and MemoryStore below (tests, and browsers that block storage).
  */
 import { AppError, MESSAGES } from '../openapi/errors.js';
 import { processYamlFile, safeFileName, fileExtension } from './ingest.js';
@@ -186,7 +186,13 @@ export class WorkbenchService {
       saved = await this.store.yamlFiles.create({ ...record, createdAt: t });
       status = 'created';
     }
-    await this.store.endpoints.replaceForYamlFile(saved.id, project.id, checked.endpoints);
+    try {
+      await this.store.endpoints.replaceForYamlFile(saved.id, project.id, checked.endpoints);
+    } catch (err) {
+      // Keep the store consistent: a new file without its endpoints is removed again.
+      if (status === 'created') await this.store.yamlFiles.remove(saved.id).catch(() => {});
+      throw err;
+    }
 
     return {
       fileName,

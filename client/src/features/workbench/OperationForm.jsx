@@ -150,7 +150,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
   };
 
   // ---------------------------------------------------------------- execute
-  const execute = async () => {
+  const execute = async ({ forceBrowser = false } = {}) => {
     const errors = validate();
     patch({ errors });
     if (Object.keys(errors).length) {
@@ -172,8 +172,9 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
     const files = collectFiles(state.bodyMode === 'form' ? state.body : undefined);
     try {
       const result = await wb.source.execute({
-        yamlFileId: wb.yamlFileId,
         req: preview,
+        serverUrl: model.servers[0]?.url,
+        forceBrowser,
         files,
         settings,
         signal: controller.signal,
@@ -191,7 +192,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
             root,
           }),
       });
-      patch({ response: { ...result, request: preview, at: started } });
+      patch({ response: { ...result, request: preview, at: started, viaBrowserRetry: forceBrowser } });
       wb.recordExecution({ at: started, method: operation.method, path: preview.path, status: result.status, ok: result.ok, durationMs: result.durationMs, yamlFileId: wb.yamlFileId, endpointKey: operation.id, fileName: detail.file.fileName });
       if (result.ok) {
         toast.success(`${result.status} ${result.statusText || 'OK'}`, { message: `${MESSAGES.REQUEST_OK} ${operation.method} ${preview.path} · ${result.durationMs} ms` });
@@ -204,7 +205,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
       if (e.code === 'CANCELLED') {
         toast.info(MESSAGES.CANCELLED);
       } else {
-        patch({ response: { failure: e, request: preview, at: started } });
+        patch({ response: { failure: e, request: preview, at: started, viaProxy: wb.source.supportsProxy && !forceBrowser && settings.request.useServerProxy !== false } });
         wb.recordExecution({ at: started, method: operation.method, path: preview.path, status: 0, ok: false, error: e.message, yamlFileId: wb.yamlFileId, endpointKey: operation.id, fileName: detail.file.fileName });
         toast.error(MESSAGES.REQUEST_FAILED, { message: e.message, details: e.details });
       }
@@ -443,7 +444,18 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
         <p style={{ marginTop: 8 }}>This usually deletes data and can&apos;t be undone.</p>
       </ConfirmDialog>
 
-      {state.response && <ResponseViewer response={state.response} onClear={() => patch({ response: null })} />}
+      {state.response && (
+        <ResponseViewer
+          response={state.response}
+          onClear={() => patch({ response: null })}
+          onRetryInBrowser={
+            state.response.failure?.code && ['NETWORK', 'TIMEOUT'].includes(state.response.failure.code) && state.response.viaProxy
+              ? () => execute({ forceBrowser: true })
+              : null
+          }
+          retrying={sending}
+        />
+      )}
     </div>
   );
 }

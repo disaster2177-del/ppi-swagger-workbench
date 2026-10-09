@@ -48,9 +48,9 @@ export default function TopNav({ mode, page, onMode, onSettings, leftOpen, right
       <div className="topnav-end">
         {source && (
           <span className="storage-indicator" title={source.note ?? source.label}>
-            <Badge tone={source.kind === 'memory' ? 'warn' : 'good'}>
+            <Badge tone={source.persistent ? 'good' : 'warn'}>
               <Icon name="dot" size={10} />
-              {source.kind === 'server' ? 'MongoDB' : source.kind === 'artifact' ? 'Workspace DB' : 'Not saved'}
+              {source.persistent ? 'Saved in this browser' : 'Not saved'}
             </Badge>
           </span>
         )}

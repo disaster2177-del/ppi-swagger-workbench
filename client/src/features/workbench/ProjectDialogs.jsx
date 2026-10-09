@@ -1,7 +1,7 @@
 /**
  * Project management (create, rename, delete) and the bulk upload report.
  */
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { MESSAGES } from '@workbench/shared/openapi';
 import { Badge, Button, ConfirmDialog, Field, Icon, IconButton, Modal, TextInput, Textarea, formatDateTime, useToast } from '../../ui/index.jsx';
 import { describeDetails, toUserError } from '../../services/errors.js';
@@ -11,6 +11,9 @@ export function ProjectForm({ initial, onSubmit, submitLabel, onCancel }) {
   const [description, setDescription] = useState(initial?.description ?? '');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const uid = useId().replace(/:/g, '');
+  const nameId = `pf-name-${initial?.id ?? 'new'}-${uid}`;
+  const descId = `pf-desc-${initial?.id ?? 'new'}-${uid}`;
   return (
     <form
       className="project-form"
@@ -36,11 +39,11 @@ export function ProjectForm({ initial, onSubmit, submitLabel, onCancel }) {
         }
       }}
     >
-      <Field id={`pf-name-${initial?.id ?? 'new'}`} label="Project name" required error={error}>
-        <TextInput id={`pf-name-${initial?.id ?? 'new'}`} value={name} maxLength={80} placeholder="e.g. Payment Service" onChange={(e) => setName(e.target.value)} />
+      <Field id={nameId} label="Project name" required error={error}>
+        <TextInput id={nameId} value={name} maxLength={80} placeholder="e.g. Payment Service" onChange={(e) => setName(e.target.value)} />
       </Field>
-      <Field id={`pf-desc-${initial?.id ?? 'new'}`} label="Description" optional>
-        <Textarea id={`pf-desc-${initial?.id ?? 'new'}`} rows={2} value={description} maxLength={500} onChange={(e) => setDescription(e.target.value)} />
+      <Field id={descId} label="Description" optional>
+        <Textarea id={descId} rows={2} value={description} maxLength={500} onChange={(e) => setDescription(e.target.value)} />
       </Field>
       <div className="row-end">
         {onCancel && (

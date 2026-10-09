@@ -1,11 +1,14 @@
 /**
  * Workbench state: Project → YAML file → endpoint → form.
  * Lives at the shell level so switching view modes keeps the selection and
- * any half-filled forms.
+ * any half-filled forms. Projects and YAML files come from this browser's
+ * workspace (localStorage); the last selection is restored after a reload,
+ * and changes made in another tab of the same browser show up here too.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MESSAGES, buildApiModel, parseDefinitionText } from '@workbench/shared/openapi';
 import { toUserError, describeDetails } from '../../services/errors.js';
+import { readPref, writePref } from '../../state/prefs.js';
 
 const HISTORY_LIMIT = 40;
 
@@ -26,6 +29,8 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
   const forms = useRef(new Map());
   const token = useRef({ yaml: 0, detail: 0 });
   const appliedDefault = useRef(false);
+  const pendingRestore = useRef(null);
+  const current = useRef({});
 
   // ------------------------------------------------------------ projects
   const loadProjects = useCallback(async () => {
@@ -48,13 +53,19 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
     loadProjects();
   }, [loadProjects]);
 
-  // Default project from Settings, once both are loaded.
+  // On load: reopen the last selection in this browser, else the default project chosen in Settings.
   useEffect(() => {
-    if (appliedDefault.current || !settingsReady || projectsStatus !== 'ready') return;
+    if (appliedDefault.current || projectsStatus !== 'ready') return;
     appliedDefault.current = true;
-    const id = settings.defaults?.projectId;
-    if (id && projects.some((p) => p.id === id)) setProjectId(id);
-  }, [settingsReady, projectsStatus, projects, settings.defaults?.projectId]);
+    const last = readPref('selection', null);
+    const fallback = readPref('defaultProjectId', '');
+    if (last?.projectId && projects.some((p) => p.id === last.projectId)) {
+      pendingRestore.current = last;
+      setProjectId(last.projectId);
+    } else if (fallback && projects.some((p) => p.id === fallback)) {
+      setProjectId(fallback);
+    }
+  }, [projectsStatus, projects]);
 
   // ------------------------------------------------------------ YAML files of the selected project
   const loadYamlFiles = useCallback(
@@ -88,7 +99,18 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
     setYamlFileId('');
     setDetail(null);
     setEndpointKey('');
-    if (source) loadYamlFiles(projectId);
+    if (!source) return;
+    loadYamlFiles(projectId).then((list) => {
+      const r = pendingRestore.current;
+      if (r && r.projectId === projectId) {
+        pendingRestore.current = null;
+        if (r.yamlFileId && list.some((f) => f.id === r.yamlFileId)) {
+          setYamlFileId(r.yamlFileId);
+          loadDetail(r.yamlFileId);
+          if (r.endpointKey) setEndpointKey(r.endpointKey);
+        }
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, source]);
 
@@ -179,7 +201,7 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
       if (!files.length) return null;
       setUploading({ count: files.length });
       try {
-        const out = await source.yamlFiles.upload(projectId, files);
+        const out = await source.yamlFiles.upload(projectId, files, settings);
         const projectName = projects.find((p) => p.id === projectId)?.name ?? 'the project';
         if (out.failed === 0) {
           toast.success(MESSAGES.UPLOAD_OK, {
@@ -209,7 +231,7 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
         setUploading(null);
       }
     },
-    [projectId, projects, source, toast, loadYamlFiles, loadProjects, yamlFileId, selectYaml, loadDetail],
+    [projectId, projects, source, settings, toast, loadYamlFiles, loadProjects, yamlFileId, selectYaml, loadDetail],
   );
 
   const deleteYaml = useCallback(
@@ -227,6 +249,105 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
     },
     [source, yamlFiles, yamlFileId, projectId, loadYamlFiles, loadProjects, toast],
   );
+
+  // Remember the selection in this browser so a reload reopens it.
+  useEffect(() => {
+    current.current = { projectId, yamlFileId, endpointKey };
+    if (appliedDefault.current && !pendingRestore.current) writePref('selection', { projectId, yamlFileId, endpointKey });
+  }, [projectId, yamlFileId, endpointKey]);
+
+  // Another tab of this browser changed the workspace: refresh what is shown.
+  useEffect(() => {
+    if (!source?.storage) return undefined;
+    return source.storage.subscribe(async () => {
+      const list = await loadProjects();
+      const { projectId: pid, yamlFileId: yid } = current.current;
+      if (pid && !list.some((p) => p.id === pid)) {
+        setProjectId('');
+        return;
+      }
+      const files = await loadYamlFiles(pid);
+      if (yid && !files.some((f) => f.id === yid)) {
+        setYamlFileId('');
+        setDetail(null);
+        setEndpointKey('');
+      } else if (yid) {
+        loadDetail(yid);
+      }
+    });
+  }, [source, loadProjects, loadYamlFiles, loadDetail]);
+
+  /** Add the example projects (Payment Service, User Service) to this browser's workspace. */
+  const loadSamples = useCallback(async () => {
+    try {
+      const samples = await source.samples();
+      let stored = 0;
+      let firstProject = null;
+      for (const sample of samples) {
+        const existing = (await source.projects.list()).find((p) => p.name.toLowerCase() === sample.name.toLowerCase());
+        const project = existing ?? (await source.projects.create({ name: sample.name, description: sample.description }));
+        firstProject ??= project;
+        const out = await source.yamlFiles.upload(project.id, sample.files, {
+          ...settings,
+          validation: { ...settings.validation, mode: 'standard', duplicatePolicy: 'replace' },
+        });
+        stored += out.succeeded;
+      }
+      await loadProjects();
+      if (firstProject) {
+        if (firstProject.id === projectId) loadYamlFiles(projectId);
+        else setProjectId(firstProject.id);
+      }
+      toast.success('Example projects added.', { message: `${stored} YAML files saved in this browser.` });
+    } catch (err) {
+      const e = toUserError(err);
+      toast.error('Could not add the example projects.', { message: e.message });
+    }
+  }, [source, settings, projectId, loadProjects, loadYamlFiles, toast]);
+
+  /** Download this browser's workspace as a JSON file. */
+  const exportWorkspace = useCallback(() => {
+    const data = source?.storage?.export();
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ppi-swagger-workspace-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast.success('Workspace exported.', { message: 'Import the file on another PC or browser to copy these projects there.' });
+  }, [source, toast]);
+
+  /** Replace this browser's workspace with an exported file. */
+  const importWorkspace = useCallback(
+    async (file) => {
+      try {
+        let payload;
+        try {
+          payload = JSON.parse(await file.text());
+        } catch {
+          throw Object.assign(new Error('This file is not a workspace export from this app.'), { name: 'ApiError', code: 'IMPORT_INVALID' });
+        }
+        await source.storage.import(payload);
+        setProjectId('');
+        await loadProjects();
+        toast.success('Workspace imported.', { message: 'The projects and YAML files from the file are now in this browser.' });
+      } catch (err) {
+        const e = toUserError(err);
+        toast.error('Could not import the workspace.', { message: e.message });
+      }
+    },
+    [source, loadProjects, toast],
+  );
+
+  const clearWorkspace = useCallback(async () => {
+    source?.storage?.clear();
+    setProjectId('');
+    await loadProjects();
+    toast.success("This browser's workspace was cleared.");
+  }, [source, loadProjects, toast]);
 
   const recordExecution = useCallback((entry) => {
     setHistory((h) => [{ ...entry, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }, ...h].slice(0, HISTORY_LIMIT));
@@ -269,5 +390,10 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
     history,
     recordExecution,
     clearHistory: () => setHistory([]),
+
+    loadSamples,
+    exportWorkspace,
+    importWorkspace,
+    clearWorkspace,
   };
 }

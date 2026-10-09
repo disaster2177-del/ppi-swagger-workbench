@@ -10,6 +10,8 @@ import { DUPLICATE_POLICIES, SettingsValidationError, VALIDATION_MODES, sanitize
 import { Badge, Button, ChipsInput, Field, Icon, IconButton, Select, Switch, TextInput, useToast } from '../../ui/index.jsx';
 import { useAppState } from '../../state/AppState.jsx';
 import { toUserError } from '../../services/errors.js';
+import { readPref, writePref } from '../../state/prefs.js';
+import { StoragePanel } from '../workbench/SidebarPanels.jsx';
 
 const SECTIONS = [
   ['connection', 'Connection', 'globe'],
@@ -17,6 +19,7 @@ const SECTIONS = [
   ['auth', 'Authentication', 'key'],
   ['defaults', 'Defaults', 'settings'],
   ['validation', 'YAML validation', 'shield'],
+  ['storage', 'Your workspace', 'folder'],
 ];
 
 const VIEW_LABELS = { ppi: 'PPI Only', split: 'Side by Side', swagger: 'Swagger Only' };
@@ -70,6 +73,7 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
   const [secrets, setSecrets] = useState({});
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [defaultProject, setDefaultProject] = useState(() => readPref('defaultProjectId', ''));
 
   useEffect(() => {
     setDraft(clone(settings));
@@ -351,8 +355,15 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
           <section id="settings-defaults" className="settings-section card">
             <h2>Defaults</h2>
             <div className="form-grid">
-              <Field id="set-def-project" label="Default project" help="Selected when the app opens.">
-                <Select id="set-def-project" value={draft.defaults.projectId} onChange={(e) => set('defaults.projectId', e.target.value)}>
+              <Field id="set-def-project" label="Default project" help="Opened when this browser starts the app without a previous selection. Saved in this browser only.">
+                <Select
+                  id="set-def-project"
+                  value={defaultProject}
+                  onChange={(e) => {
+                    setDefaultProject(e.target.value);
+                    writePref('defaultProjectId', e.target.value);
+                  }}
+                >
                   <option value="">None</option>
                   {wb.projects.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -432,12 +443,13 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
           </section>
 
           {source && (
-            <section className="settings-section card subtle">
-              <h2>Storage</h2>
-              <p>
-                <Badge tone={source.kind === 'memory' ? 'warn' : 'good'}>{source.label}</Badge>
+            <section id="settings-storage" className="settings-section card">
+              <h2>Your workspace</h2>
+              <p className="muted">
+                Projects and YAML files are not stored on the server. Each browser keeps its own, so people using the same address only see their own files.
+                The settings on this page are shared by everyone who uses this server.
               </p>
-              {source.note && <p className="muted">{source.note}</p>}
+              <StoragePanel wb={wb} />
             </section>
           )}
         </div>

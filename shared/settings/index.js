@@ -32,7 +32,6 @@ export const DEFAULT_SETTINGS = Object.freeze({
     apiKeyValueSet: false,
   },
   defaults: {
-    projectId: '',
     viewMode: 'split',
     theme: 'system',
   },
@@ -139,7 +138,6 @@ export function sanitizeSettings(input = {}, current = DEFAULT_SETTINGS) {
 
   const d = { ...current.defaults, ...(src.defaults ?? {}) };
   const defaults = {
-    projectId: str(d.projectId, 64),
     viewMode: pick(d.viewMode, VIEW_MODES, 'split'),
     theme: pick(d.theme, THEMES, 'system'),
   };

@@ -1,80 +1,56 @@
 /**
- * REST API for projects, YAML files, endpoints, settings and request execution.
- * Mounted at /api/workbench.
+ * Workbench REST API, mounted at /api/workbench.
  *
- *   GET    /projects                          projects with YAML/endpoint counts
- *   POST   /projects                          { name, description }
- *   PATCH  /projects/:id                      { name?, description? }
- *   DELETE /projects/:id                      also deletes its YAML files and endpoints
- *   GET    /projects/:id/yaml-files?search=   YAML files of one project (no content)
- *   POST   /projects/:id/yaml-files           multipart, field "files" (several) → per-file results
- *   GET    /yaml-files/:id                    one YAML file with content and endpoints
- *   GET    /yaml-files/:id/endpoints
- *   DELETE /yaml-files/:id
- *   GET    /settings                          public settings (credentials show as set / not set)
- *   PUT    /settings                          { settings, secrets: { token?, password?, apiKeyValue? } }
- *   POST   /execute                           JSON request spec, or multipart with "request" + "file:<field>" parts
+ * Projects and YAML files are NOT stored on the server: each user's
+ * workspace lives in their own browser (localStorage). The server only
+ * provides shared settings, the request proxy and test helpers.
+ *
+ *   GET  /settings          public settings (credentials show as set / not set)
+ *   PUT  /settings          { settings, secrets: { token?, password?, apiKeyValue? } }
+ *   POST /execute           JSON request spec, or multipart with "request" + "file:<field>" parts
+ *   GET  /samples           example projects and YAML files (read-only, for "Load examples")
+ *   ANY  /echo/...          echoes the request back: a target for testing Base URL + Base Path
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Router } from 'express';
 import multer from 'multer';
 import { AppError, MESSAGES } from '@workbench/shared/openapi';
 import { SettingsValidationError } from '@workbench/shared/settings';
-import { isMongoConnected } from '../db.js';
 import logger from '../logger.js';
 
-const MAX_FILES_PER_UPLOAD = 50;
-const HARD_FILE_LIMIT = 20 * 1024 * 1024; // the per-file limit from Settings is checked by the service
+const SAMPLES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../samples/openapi');
+const MASK = /^(authorization|cookie|x-api-key|proxy-authorization)$/i;
 
-const decoder = new TextDecoder('utf-8', { fatal: true });
-function toText(buffer) {
+function loadSamples() {
   try {
-    return { text: decoder.decode(buffer).replace(/^﻿/, '') };
-  } catch {
-    return { text: '', readError: true };
+    const manifest = JSON.parse(fs.readFileSync(path.join(SAMPLES_DIR, 'projects.json'), 'utf8'));
+    return Object.entries(manifest.projects ?? {}).map(([folder, info]) => ({
+      name: info.name,
+      description: info.description ?? '',
+      files: fs
+        .readdirSync(path.join(SAMPLES_DIR, folder))
+        .filter((f) => /\.ya?ml$/i.test(f))
+        .sort()
+        .map((f) => ({ fileName: f, text: fs.readFileSync(path.join(SAMPLES_DIR, folder, f), 'utf8') })),
+    }));
+  } catch (err) {
+    logger.warn(`Example YAML files not available: ${err.message}`);
+    return [];
   }
 }
 
-export default function createWorkbenchRouter({ workbench, settings, executor }) {
+export default function createWorkbenchRouter({ settings, executor }) {
   const router = Router();
-  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: HARD_FILE_LIMIT, files: MAX_FILES_PER_UPLOAD } });
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 20 } });
 
-  router.use((req, res, next) => {
-    if (!isMongoConnected()) {
-      return res.status(503).json({ code: 'DB_UNAVAILABLE', message: 'The database is not connected, so projects and YAML files are unavailable right now.' });
-    }
-    next();
-  });
-
-  // ---- projects
-  router.get('/projects', async (_req, res) => res.json(await workbench.listProjects()));
-  router.post('/projects', async (req, res) => res.status(201).json(await workbench.createProject(req.body ?? {})));
-  router.patch('/projects/:id', async (req, res) => res.json(await workbench.updateProject(req.params.id, req.body ?? {})));
-  router.delete('/projects/:id', async (req, res) => res.json(await workbench.deleteProject(req.params.id)));
-
-  // ---- YAML files
-  router.get('/projects/:id/yaml-files', async (req, res) => {
-    res.json(await workbench.listYamlFiles(req.params.id, { search: String(req.query.search ?? '') }));
-  });
-
-  router.post('/projects/:id/yaml-files', upload.array('files', MAX_FILES_PER_UPLOAD), async (req, res) => {
-    const files = (req.files ?? []).map((f) => ({ fileName: f.originalname, sizeBytes: f.size, ...toText(f.buffer) }));
-    const result = await workbench.uploadYamlFiles(req.params.id, files, await settings.getPublic());
-    logger.info(`YAML upload to project ${req.params.id}: ${result.succeeded} stored, ${result.failed} rejected`);
-    res.status(result.succeeded ? 201 : 422).json(result);
-  });
-
-  router.get('/yaml-files/:id', async (req, res) => res.json(await workbench.getYamlFile(req.params.id)));
-  router.get('/yaml-files/:id/endpoints', async (req, res) => res.json((await workbench.getYamlFile(req.params.id)).endpoints));
-  router.delete('/yaml-files/:id', async (req, res) => res.json(await workbench.deleteYamlFile(req.params.id)));
-
-  // ---- settings
   router.get('/settings', async (_req, res) => res.json(await settings.getPublic()));
   router.put('/settings', async (req, res) => {
     const { settings: input, secrets } = req.body ?? {};
     res.json(await settings.update(input ?? {}, secrets ?? {}));
   });
 
-  // ---- execute
   router.post('/execute', upload.any(), async (req, res) => {
     let spec = req.body;
     if (typeof req.body?.request === 'string') {
@@ -87,22 +63,27 @@ export default function createWorkbenchRouter({ workbench, settings, executor })
     res.json(await executor.execute(spec, req.files ?? []));
   });
 
+  router.get('/samples', (_req, res) => res.json(loadSamples()));
+
+  // Test target: set Base URL to http://<host>:4000/api/workbench/echo to see exactly what the proxy sends.
+  router.use('/echo', (req, res) => {
+    res.json({
+      echo: true,
+      method: req.method,
+      path: req.path,
+      query: req.query,
+      headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, MASK.test(k) ? '••••••' : v])),
+      body: req.body ?? null,
+      receivedAt: new Date().toISOString(),
+    });
+  });
+
   // ---- errors: always a { code, message } body the UI can show as-is
   // eslint-disable-next-line no-unused-vars
   router.use((err, _req, res, _next) => {
     if (err instanceof AppError) return res.status(err.status).json(err.toJSON());
     if (err instanceof SettingsValidationError) return res.status(400).json({ code: err.code, message: err.message, fields: err.fields });
-    if (err instanceof multer.MulterError) {
-      const message =
-        err.code === 'LIMIT_FILE_SIZE'
-          ? `${MESSAGES.FILE_TOO_LARGE} The upload limit is 20 MB per file.`
-          : err.code === 'LIMIT_FILE_COUNT'
-            ? `Upload at most ${MAX_FILES_PER_UPLOAD} files at a time.`
-            : MESSAGES.UPLOAD_FAILED;
-      return res.status(400).json({ code: 'UPLOAD_FAILED', message });
-    }
-    if (err?.code === 11000) return res.status(409).json({ code: 'CONFLICT', message: 'That name is already in use.' });
-    if (err?.name === 'CastError') return res.status(404).json({ code: 'NOT_FOUND', message: MESSAGES.NOT_FOUND });
+    if (err instanceof multer.MulterError) return res.status(400).json({ code: 'UPLOAD_FAILED', message: MESSAGES.UPLOAD_FAILED });
     if (err?.type === 'entity.parse.failed') return res.status(400).json({ code: 'BAD_REQUEST', message: 'The request body is not valid JSON.' });
     logger.error(err);
     res.status(500).json({ code: 'INTERNAL', message: MESSAGES.GENERIC });

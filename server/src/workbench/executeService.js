@@ -3,11 +3,20 @@
  *
  * Why through the server: the browser never holds the stored credentials,
  * CORS does not get in the way, and the request timeout is enforced in one
- * place. The target is always Settings Base URL + Base Path (or the YAML
- * file's own server); the browser only supplies the endpoint path, so this
- * cannot be used to reach arbitrary hosts.
+ * place.
+ *
+ * Target URL = Settings Base URL (active environment), or else the server
+ * from the YAML file (sent by the browser as `serverUrl`), + Base Path +
+ * endpoint path + query. YAML files live in each user's browser, so the
+ * server never stores them.
+ *
+ * Outbound restrictions (env):
+ *   WORKBENCH_ALLOWED_HOSTS  comma list of host names (or *.suffix) the proxy may call; empty = any
+ *   Cloud metadata addresses (169.254.0.0/16) are always refused.
+ * Outbound HTTP proxy: set HTTPS_PROXY / HTTP_PROXY / NO_PROXY and NODE_USE_ENV_PROXY=1.
  */
-import { AppError, MESSAGES, HTTP_METHODS, activeEnvironmentBase, applyAuth, buildApiModel, effectiveBase, joinUrl, parseDefinitionText } from './sharedImports.js';
+import { AppError, MESSAGES, HTTP_METHODS, activeEnvironmentBase, applyAuth, effectiveBase, joinUrl } from './sharedImports.js';
+import { causeCode, describeNetworkError } from './networkErrors.js';
 import logger from '../logger.js';
 
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
@@ -26,34 +35,60 @@ function maskUrl(url, auth) {
   }
 }
 
+function allowedHosts() {
+  return (process.env.WORKBENCH_ALLOWED_HOSTS ?? '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function checkTarget(url) {
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (/^169\.254\./.test(host) || host === 'metadata.google.internal') {
+    throw new AppError('TARGET_BLOCKED', 'Requests to cloud metadata addresses are not allowed.', { status: 403 });
+  }
+  const list = allowedHosts();
+  if (list.length && !list.some((h) => (h.startsWith('*.') ? host.endsWith(h.slice(1)) : host === h))) {
+    throw new AppError('TARGET_BLOCKED', `This server is not allowed to call "${host}". An administrator can add it to WORKBENCH_ALLOWED_HOSTS.`, {
+      status: 403,
+    });
+  }
+}
+
 export class ExecuteService {
-  constructor({ workbench, settings, fetchImpl = globalThis.fetch }) {
-    this.workbench = workbench;
+  constructor({ settings, fetchImpl = globalThis.fetch }) {
     this.settings = settings;
     this.fetch = fetchImpl;
   }
 
+  /** Build the final URL without sending anything (used by /execute and the tests). */
+  async resolveUrl(spec) {
+    const path = String(spec?.path ?? '');
+    if (!path.startsWith('/') || /^\/\//.test(path) || /[\r\n]/.test(path)) throw new AppError('REQUEST_FAILED', 'The endpoint path is not valid.');
+    if (/\{[^}]+\}/.test(path)) throw new AppError('REQUIRED_FIELDS', 'Fill in every path parameter before sending.');
+    const { settings, auth } = await this.settings.getForRequest();
+    const servers = typeof spec.serverUrl === 'string' && spec.serverUrl.trim() ? [{ url: spec.serverUrl.trim() }] : [];
+    const base = effectiveBase(activeEnvironmentBase(settings), servers);
+    if (!/^https?:\/\//i.test(base)) throw new AppError('NO_BASE_URL', MESSAGES.NO_BASE_URL);
+    let url;
+    try {
+      url = new URL(joinUrl(base, path));
+    } catch {
+      throw new AppError('NO_BASE_URL', `The Base URL "${base}" is not a valid address.`);
+    }
+    const query = Array.isArray(spec.query) ? spec.query : [];
+    for (const pair of query) if (Array.isArray(pair) && pair.length === 2) url.searchParams.append(String(pair[0]), String(pair[1]));
+    return { url, settings, auth };
+  }
+
   /**
-   * spec = { yamlFileId, method, path, query: [[k, v]], headers: {}, body: {kind, mediaType, json|text|fields} }
+   * spec = { method, path, query: [[k, v]], headers: {}, body: {kind, mediaType, json|text|fields}, serverUrl? }
    * files = multer files for multipart bodies, fieldname "file:<field>"
    */
   async execute(spec, files = []) {
     const method = String(spec?.method ?? '').toLowerCase();
     if (!HTTP_METHODS.includes(method)) throw new AppError('REQUEST_FAILED', 'Unsupported HTTP method.');
-    const path = String(spec.path ?? '');
-    if (!path.startsWith('/') || /^\/\//.test(path) || /[\r\n]/.test(path)) throw new AppError('REQUEST_FAILED', 'The endpoint path is not valid.');
-    if (/\{[^}]+\}/.test(path)) throw new AppError('REQUIRED_FIELDS', 'Fill in every path parameter before sending.');
-
-    const file = await this.workbench.getYamlFile(spec.yamlFileId);
-    const model = buildApiModel(parseDefinitionText(file.content));
-    const { settings, auth } = await this.settings.getForRequest();
-    const env = activeEnvironmentBase(settings);
-    const base = effectiveBase(env, model.servers);
-    if (!/^https?:\/\//i.test(base)) throw new AppError('NO_BASE_URL', MESSAGES.NO_BASE_URL);
-
-    const url = new URL(joinUrl(base, path));
-    const query = Array.isArray(spec.query) ? spec.query : [];
-    for (const pair of query) if (Array.isArray(pair) && pair.length === 2) url.searchParams.append(String(pair[0]), String(pair[1]));
+    const { url, settings, auth } = await this.resolveUrl(spec);
 
     const headers = {};
     for (const h of settings.request.defaultHeaders) if (h.enabled !== false && h.name) headers[h.name] = h.value;
@@ -64,6 +99,7 @@ export class ExecuteService {
     const authQuery = [];
     applyAuth(auth, headers, authQuery);
     for (const [k, v] of authQuery) url.searchParams.set(k, v);
+    checkTarget(url);
 
     let body;
     const b = spec.body;
@@ -85,6 +121,7 @@ export class ExecuteService {
       if (b.kind !== 'multipart' && b.mediaType && !Object.keys(headers).some((k) => k.toLowerCase() === 'content-type')) headers['Content-Type'] = b.mediaType;
     }
 
+    const shownUrl = maskUrl(url.toString(), auth);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), settings.request.timeoutMs);
     const started = Date.now();
@@ -93,9 +130,16 @@ export class ExecuteService {
       res = await this.fetch(url, { method: method.toUpperCase(), headers, body, signal: controller.signal, redirect: 'manual' });
     } catch (err) {
       clearTimeout(timer);
-      if (controller.signal.aborted) throw new AppError('TIMEOUT', `${MESSAGES.TIMEOUT} (limit: ${Math.round(settings.request.timeoutMs / 1000)} s)`, { status: 504 });
-      logger.warn(`Proxy request to ${url.origin} failed: ${err.cause?.code ?? err.message}`);
-      throw new AppError('NETWORK', MESSAGES.NETWORK, { status: 502, details: { reason: err.cause?.code ?? err.message } });
+      if (controller.signal.aborted) {
+        throw new AppError('TIMEOUT', `${MESSAGES.TIMEOUT} (limit: ${Math.round(settings.request.timeoutMs / 1000)} s)`, {
+          status: 504,
+          details: { url: shownUrl, reason: 'TIMEOUT' },
+        });
+      }
+      const code = causeCode(err);
+      const d = describeNetworkError(code, url.toString());
+      logger.warn(`Proxy request ${method.toUpperCase()} ${shownUrl} failed: ${code}`);
+      throw new AppError('NETWORK', `${d.title} ${d.hint}`, { status: 502, details: { url: shownUrl, reason: code } });
     }
 
     let buffer;
@@ -117,8 +161,8 @@ export class ExecuteService {
       }
       buffer = Buffer.concat(chunks.map((c) => Buffer.from(c)));
     } catch (err) {
-      if (controller.signal.aborted) throw new AppError('TIMEOUT', MESSAGES.TIMEOUT, { status: 504 });
-      throw new AppError('NETWORK', MESSAGES.NETWORK, { status: 502, details: { reason: err.message } });
+      if (controller.signal.aborted) throw new AppError('TIMEOUT', MESSAGES.TIMEOUT, { status: 504, details: { url: shownUrl } });
+      throw new AppError('NETWORK', MESSAGES.NETWORK, { status: 502, details: { url: shownUrl, reason: causeCode(err) } });
     } finally {
       clearTimeout(timer);
     }
@@ -129,7 +173,7 @@ export class ExecuteService {
       ok: res.ok,
       status: res.status,
       statusText: res.statusText,
-      url: maskUrl(url.toString(), auth),
+      url: shownUrl,
       headers: [...res.headers.entries()],
       contentType,
       body: isText ? buffer.toString('utf8') : null,

@@ -828,3 +828,57 @@
 .text-warn {
   color: var(--warn);
 }
+
+.failure-url {
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.failure-url code {
+  font-size: var(--fs-sm);
+}
+
+.failure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.failure-actions .muted {
+  font-size: var(--fs-xs);
+  max-width: 48ch;
+}
+
+.storage-meter {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.storage-meter > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.storage-meter.warn > span {
+  background: var(--warn);
+}
+
+.storage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.first-run-alt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}

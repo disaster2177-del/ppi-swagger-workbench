@@ -96,7 +96,7 @@ function HeaderTable({ rows }) {
   );
 }
 
-export default function ResponseViewer({ response, onClear }) {
+export default function ResponseViewer({ response, onClear, onRetryInBrowser, retrying }) {
   const [tab, setTab] = useState('body');
   const [view, setView] = useState('auto');
   const curlRef = useRef(null);
@@ -117,6 +117,21 @@ export default function ResponseViewer({ response, onClear }) {
           <div>
             <strong>API request failed.</strong>
             <div>{response.failure.message}</div>
+            {response.failure.details?.url && (
+              <div className="failure-url">
+                <span className="muted">Request URL</span> <code>{response.failure.details.url}</code>
+              </div>
+            )}
+            {onRetryInBrowser && (
+              <div className="failure-actions">
+                <Button size="sm" icon="globe" onClick={onRetryInBrowser} loading={retrying}>
+                  Send from my browser instead
+                </Button>
+                <span className="muted">
+                  Your PC may reach APIs the VM can&apos;t (for example on your own network). The API must allow browser requests (CORS).
+                </span>
+              </div>
+            )}
             {response.failure.details && (
               <details className="disclosure" style={{ marginTop: 6 }}>
                 <summary>Technical details</summary>
@@ -150,7 +165,7 @@ export default function ResponseViewer({ response, onClear }) {
           <span className="response-text">{response.statusText}</span>
           <span className="muted tabular">{response.durationMs} ms</span>
           <span className="muted tabular">{formatBytes(response.sizeBytes)}</span>
-          {response.viaProxy ? <Badge tone="info">via server</Badge> : <Badge>from browser</Badge>}
+          {response.viaProxy ? <Badge tone="info">via server</Badge> : <Badge>from your browser</Badge>}
           {response.truncated && <Badge tone="warn">truncated at 5 MB</Badge>}
         </div>
         <Button size="sm" variant="ghost" icon="x" onClick={onClear}>

@@ -14,7 +14,6 @@
     "build:demo": "npm --workspace client run build:demo",
     "start": "npm --workspace server start",
     "simulate": "npm --workspace server run simulate",
-    "seed": "npm --workspace server run seed",
     "infra": "docker compose up -d kafka mongo",
     "test": "npm --workspace shared test && npm --workspace server test && npm --workspace client test"
   },

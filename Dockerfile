@@ -14,6 +14,8 @@ RUN npm run build
 # ---- API server (also serves the built client)
 FROM node:22-alpine
 ENV NODE_ENV=production
+# Let fetch() honour HTTPS_PROXY / HTTP_PROXY / NO_PROXY for the API request proxy (Node >= 22.21).
+ENV NODE_USE_ENV_PROXY=1
 WORKDIR /app
 COPY package.json ./
 COPY shared/package.json shared/

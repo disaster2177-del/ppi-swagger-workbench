@@ -10,8 +10,7 @@
     "simulate": "node scripts/simulator.js",
     "test": "node --test test/*.test.js",
     "samples": "node scripts/publish-samples.js",
-    "generate-samples": "node scripts/generate-samples.js",
-    "seed": "node scripts/seed-workbench.js"
+    "generate-samples": "node scripts/generate-samples.js"
   },
   "engines": {
     "node": ">=20"
