@@ -9,6 +9,8 @@ RUN npm install --no-audit --no-fund
 COPY shared/ shared/
 COPY server/ server/
 COPY client/ client/
+# The client bundles the example YAML files ("Load example projects" in browser-only builds).
+COPY samples/ samples/
 RUN npm run build
 
 # ---- API server (also serves the built client)
