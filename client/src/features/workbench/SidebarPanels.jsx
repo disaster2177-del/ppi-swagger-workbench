@@ -44,6 +44,9 @@ export function ProjectsPanel({ wb }) {
   );
 }
 
+// Pages hosted inside Claude cannot start file downloads, so Export is hidden there.
+const HOSTED_PREVIEW = typeof window !== 'undefined' && typeof window.claude?.use === 'function';
+
 /** Where this browser's workspace lives, how full it is, and backup / restore. */
 export function StoragePanel({ wb }) {
   const fileRef = useRef(null);
@@ -69,9 +72,11 @@ export function StoragePanel({ wb }) {
             {formatBytes(used)} used of about {formatBytes(s.storage.quotaBytes)}
           </p>
           <div className="storage-actions">
-            <Button size="sm" icon="upload" onClick={wb.exportWorkspace} disabled={!wb.projects.length}>
-              Export
-            </Button>
+            {!HOSTED_PREVIEW && (
+              <Button size="sm" icon="upload" onClick={wb.exportWorkspace} disabled={!wb.projects.length}>
+                Export
+              </Button>
+            )}
             <Button size="sm" icon="file" onClick={() => fileRef.current?.click()}>
               Import
             </Button>
