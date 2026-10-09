@@ -19,7 +19,9 @@ export const DEFAULT_SETTINGS = Object.freeze({
   request: {
     timeoutMs: 30000,
     defaultHeaders: [],
-    useServerProxy: true,
+    // 'browser': the browser sends the real GET/POST/PUT/DELETE (visible in DevTools; the API must allow CORS)
+    // 'server':  the VM sends it via POST /api/workbench/execute (no CORS limits; credentials stay on the server)
+    sendVia: 'browser',
   },
   auth: {
     type: 'none',
@@ -121,7 +123,7 @@ export function sanitizeSettings(input = {}, current = DEFAULT_SETTINGS) {
   const request = {
     timeoutMs: int(r.timeoutMs, 1000, 300000, DEFAULT_SETTINGS.request.timeoutMs),
     defaultHeaders: defaultHeaders.filter((h) => h.name),
-    useServerProxy: r.useServerProxy !== false,
+    sendVia: pick(r.sendVia, ['browser', 'server'], 'browser'),
   };
 
   const a = { ...current.auth, ...(src.auth ?? {}) };

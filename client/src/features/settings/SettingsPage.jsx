@@ -5,7 +5,7 @@
  * sent back to the browser.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { effectiveBase, joinUrl } from '@workbench/shared/openapi';
+import { duplicatedSegment, effectiveBase, joinUrl } from '@workbench/shared/openapi';
 import { DUPLICATE_POLICIES, SettingsValidationError, VALIDATION_MODES, sanitizeSettings } from '@workbench/shared/settings';
 import { Badge, Button, ChipsInput, Field, Icon, IconButton, Select, Switch, TextInput, useToast } from '../../ui/index.jsx';
 import { useAppState } from '../../state/AppState.jsx';
@@ -94,6 +94,7 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
 
   const envIndex = Math.max(0, draft.environments.findIndex((e) => e.id === draft.activeEnvironmentId));
   const env = draft.environments[envIndex];
+  const dupSegment = exampleEndpointPath ? duplicatedSegment(effectiveBase(env, exampleServers), exampleEndpointPath) : null;
   const example = joinUrl(effectiveBase(env, exampleServers) || '{server from the YAML file}', exampleEndpointPath || '/{endpoint}');
 
   const save = async () => {
@@ -213,6 +214,15 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
               <span className="eyebrow">Example request URL</span>
               <code>{example}</code>
             </div>
+            {dupSegment && (
+              <div className="callout warn" role="note">
+                <Icon name="alert" />
+                <div>
+                  The address repeats <code>/{dupSegment}</code>. The Base URL already ends with <code>/{dupSegment}</code> and the endpoint starts with it.
+                  Usually the Base URL should stop before the endpoint, for example <code>https://api.example.com/v1</code>.
+                </div>
+              </div>
+            )}
             <div className="row-end">
               {draft.environments.length > 1 && (
                 <Button
@@ -251,18 +261,33 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                   <span className="muted">seconds</span>
                 </div>
               </Field>
-              <Field
-                id="set-proxy"
-                label="Send requests through the server"
-                help={
-                  source?.supportsProxy
-                    ? 'Recommended. The server adds saved credentials and avoids browser CORS limits.'
-                    : 'Not available in the browser-only version; requests are sent from your browser.'
-                }
-              >
-                <Switch id="set-proxy" checked={source?.supportsProxy ? draft.request.useServerProxy : false} disabled={!source?.supportsProxy} onChange={(v) => set('request.useServerProxy', v)} />
-              </Field>
             </div>
+
+            {source?.supportsProxy && (
+              <fieldset className="choice-cards two">
+                <legend className="field-label">Send requests from</legend>
+                {[
+                  [
+                    'browser',
+                    'Your browser',
+                    'The real GET, POST, PUT or DELETE goes straight to the API and shows in DevTools → Network. The API must allow requests from this page (CORS). Credentials stay in this browser tab.',
+                  ],
+                  [
+                    'server',
+                    'The server (VM)',
+                    'The browser sends POST /api/workbench/execute and the VM calls the API. No CORS limits; credentials are stored encrypted on the server. The VM must be able to reach the API.',
+                  ],
+                ].map(([value, title, text]) => (
+                  <label key={value} className={`choice${draft.request.sendVia === value ? ' selected' : ''}`}>
+                    <input type="radio" name="send-via" value={value} checked={draft.request.sendVia === value} onChange={() => set('request.sendVia', value)} />
+                    <span>
+                      <strong>{title}</strong>
+                      <span className="muted">{text}</span>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
 
             <h3 className="eyebrow">Default request headers</h3>
             <p className="field-help">Sent with every API request.</p>
@@ -298,9 +323,9 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
           <section id="settings-auth" className="settings-section card">
             <h2>Authentication</h2>
             <p className="muted">
-              {source?.supportsProxy
-                ? 'Credentials are encrypted on the server and only added when the server sends a request. They are never shown again.'
-                : 'In the browser-only version, credentials stay in this browser tab and are forgotten when you close it. They are never saved to the shared database.'}
+              {source?.supportsProxy && draft.request.sendVia === 'server'
+                ? 'Requests go through the server, so credentials are encrypted on the server and added there. They are never shown again.'
+                : 'Requests go from your browser, so credentials stay in this browser tab and are forgotten when you close it. They are never sent to the server.'}
             </p>
             <div className="form-grid">
               <Field id="set-auth-type" label="Type">

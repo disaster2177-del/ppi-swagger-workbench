@@ -10,6 +10,7 @@ import {
   describeHttpStatus,
   effectiveBase,
   initialValue,
+  duplicatedSegment,
   isFormFriendly,
   resolveSchema,
   widgetFor,
@@ -90,6 +91,9 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
   const bodyIsObject = !!content && widgetFor(resolveSchema(content.schema, root).schema) === 'object';
   const env = activeEnvironment(settings);
   const base = effectiveBase(env, model.servers);
+  // Which way Execute goes: the browser itself (real GET/POST/... in DevTools) or the server proxy.
+  const sentVia = (override) => (wb.source.supportsProxy ? override ?? settings.request.sendVia ?? 'browser' : 'browser');
+  const dup = duplicatedSegment(base, operation.path);
   const baseSource = env.baseUrl ? `Base URL from Settings (${env.name})` : model.servers[0] ? 'Server from the YAML file' : null;
 
   const preview = useMemo(
@@ -150,7 +154,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
   };
 
   // ---------------------------------------------------------------- execute
-  const execute = async ({ forceBrowser = false } = {}) => {
+  const execute = async ({ via } = {}) => {
     const errors = validate();
     patch({ errors });
     if (Object.keys(errors).length) {
@@ -174,7 +178,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
       const result = await wb.source.execute({
         req: preview,
         serverUrl: model.servers[0]?.url,
-        forceBrowser,
+        via,
         files,
         settings,
         signal: controller.signal,
@@ -192,7 +196,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
             root,
           }),
       });
-      patch({ response: { ...result, request: preview, at: started, viaBrowserRetry: forceBrowser } });
+      patch({ response: { ...result, request: preview, at: started } });
       wb.recordExecution({ at: started, method: operation.method, path: preview.path, status: result.status, ok: result.ok, durationMs: result.durationMs, yamlFileId: wb.yamlFileId, endpointKey: operation.id, fileName: detail.file.fileName });
       if (result.ok) {
         toast.success(`${result.status} ${result.statusText || 'OK'}`, { message: `${MESSAGES.REQUEST_OK} ${operation.method} ${preview.path} · ${result.durationMs} ms` });
@@ -205,7 +209,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
       if (e.code === 'CANCELLED') {
         toast.info(MESSAGES.CANCELLED);
       } else {
-        patch({ response: { failure: e, request: preview, at: started, viaProxy: wb.source.supportsProxy && !forceBrowser && settings.request.useServerProxy !== false } });
+        patch({ response: { failure: e, request: preview, at: started, viaProxy: sentVia(via) === 'server' } });
         wb.recordExecution({ at: started, method: operation.method, path: preview.path, status: 0, ok: false, error: e.message, yamlFileId: wb.yamlFileId, endpointKey: operation.id, fileName: detail.file.fileName });
         toast.error(MESSAGES.REQUEST_FAILED, { message: e.message, details: e.details });
       }
@@ -398,6 +402,36 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
             )}
             {preview.unresolvedPath && <span className="text-warn">Fill in every path parameter.</span>}
           </p>
+          {dup && (
+            <div className="callout warn" role="note">
+              <Icon name="alert" />
+              <div>
+                The address repeats <code>/{dup}</code>: the {env.baseUrl ? 'Base URL' : 'server in the YAML file'} already ends with <code>/{dup}</code> and the endpoint
+                starts with it. If that is not intended, remove <code>/{dup}</code> from the {env.baseUrl ? 'Base URL in Settings' : 'YAML server'}.{' '}
+                {env.baseUrl && (
+                  <button type="button" className="btn-link" onClick={onOpenSettings}>
+                    Open Settings
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          <p className="field-help send-via">
+            {sentVia() === 'server' ? (
+              <>
+                <Icon name="globe" size={12} /> Sent through the server (DevTools shows <code>POST /api/workbench/execute</code>).
+              </>
+            ) : (
+              <>
+                <Icon name="globe" size={12} /> Sent directly from your browser as <code>{operation.method}</code> (visible in DevTools → Network).
+              </>
+            )}{' '}
+            {wb.source.supportsProxy && (
+              <button type="button" className="btn-link" onClick={onOpenSettings}>
+                Change
+              </button>
+            )}
+          </p>
         </section>
 
         <div className="op-actions">
@@ -448,9 +482,9 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
         <ResponseViewer
           response={state.response}
           onClear={() => patch({ response: null })}
-          onRetryInBrowser={
-            state.response.failure?.code && ['NETWORK', 'TIMEOUT'].includes(state.response.failure.code) && state.response.viaProxy
-              ? () => execute({ forceBrowser: true })
+          onRetry={
+            wb.source.supportsProxy && ['NETWORK', 'TIMEOUT'].includes(state.response.failure?.code)
+              ? { via: state.response.viaProxy ? 'browser' : 'server', run: () => execute({ via: state.response.viaProxy ? 'browser' : 'server' }) }
               : null
           }
           retrying={sending}

@@ -96,7 +96,7 @@ function HeaderTable({ rows }) {
   );
 }
 
-export default function ResponseViewer({ response, onClear, onRetryInBrowser, retrying }) {
+export default function ResponseViewer({ response, onClear, onRetry, retrying }) {
   const [tab, setTab] = useState('body');
   const [view, setView] = useState('auto');
   const curlRef = useRef(null);
@@ -122,13 +122,15 @@ export default function ResponseViewer({ response, onClear, onRetryInBrowser, re
                 <span className="muted">Request URL</span> <code>{response.failure.details.url}</code>
               </div>
             )}
-            {onRetryInBrowser && (
+            {onRetry && (
               <div className="failure-actions">
-                <Button size="sm" icon="globe" onClick={onRetryInBrowser} loading={retrying}>
-                  Send from my browser instead
+                <Button size="sm" icon="globe" onClick={onRetry.run} loading={retrying}>
+                  {onRetry.via === 'browser' ? 'Send from my browser instead' : 'Send through the server instead'}
                 </Button>
                 <span className="muted">
-                  Your PC may reach APIs the VM can&apos;t (for example on your own network). The API must allow browser requests (CORS).
+                  {onRetry.via === 'browser'
+                    ? "Your PC may reach APIs the VM can't (for example on your own network). The API must allow browser requests (CORS)."
+                    : 'The server (VM) sends it instead. This avoids CORS, and works if the VM can reach the API.'}
                 </span>
               </div>
             )}
@@ -165,7 +167,7 @@ export default function ResponseViewer({ response, onClear, onRetryInBrowser, re
           <span className="response-text">{response.statusText}</span>
           <span className="muted tabular">{response.durationMs} ms</span>
           <span className="muted tabular">{formatBytes(response.sizeBytes)}</span>
-          {response.viaProxy ? <Badge tone="info">via server</Badge> : <Badge>from your browser</Badge>}
+          {response.viaProxy ? <Badge tone="info">sent through the server</Badge> : <Badge>sent from your browser</Badge>}
           {response.truncated && <Badge tone="warn">truncated at 5 MB</Badge>}
         </div>
         <Button size="sm" variant="ghost" icon="x" onClick={onClear}>

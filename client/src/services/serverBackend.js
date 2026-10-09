@@ -1,11 +1,19 @@
 /**
  * The parts that stay on the server (Express on the VM): shared settings,
- * the API request proxy and the example YAML files. Projects and YAML files
- * are not sent here.
+ * the optional API request proxy and the example YAML files. Projects and
+ * YAML files are not sent here.
+ *
+ * Sending an API request (Settings → Requests → "Send requests from"):
+ *   browser (default)  the browser calls the API directly, so DevTools shows the real
+ *                      GET / POST / PUT / DELETE. Needs CORS on the API. Credentials
+ *                      for this mode are kept in this browser tab only.
+ *   server             the browser POSTs the request to /api/workbench/execute and the
+ *                      VM calls the API. No CORS limits; credentials stay on the server.
  */
 import { MESSAGES } from '@workbench/shared/openapi';
 import { ApiError } from './errors.js';
 import { executeInBrowser } from './browserExecute.js';
+import { createLocalSecrets } from './localSecrets.js';
 
 const BASE = (import.meta.env?.VITE_API_BASE ?? '') + '/api/workbench';
 
@@ -36,24 +44,35 @@ async function http(method, path, { json, form, signal } = {}) {
 }
 
 export function createServerBackend() {
+  const local = createLocalSecrets();
+  // In browser mode the "saved" flags describe this browser's credentials.
+  const withFlags = (s) => (s?.request?.sendVia === 'server' ? s : local.flags(s));
+
   return {
     kind: 'server',
     supportsProxy: true,
 
     settings: {
-      get: () => http('GET', '/settings'),
-      save: (settings, secrets) => http('PUT', '/settings', { json: { settings, secrets } }),
+      get: async () => withFlags(await http('GET', '/settings')),
+      save: async (settings, secrets = {}) => {
+        if (settings?.request?.sendVia === 'server') return withFlags(await http('PUT', '/settings', { json: { settings, secrets } }));
+        local.apply(secrets);
+        return withFlags(await http('PUT', '/settings', { json: { settings, secrets: {} } }));
+      },
     },
 
     samples: () => http('GET', '/samples'),
 
     /**
-     * req: built request (shared buildRequest); serverUrl: the YAML's first server;
-     * files: { field: File } for multipart; forceBrowser: skip the proxy for this one call.
+     * req: built request without credentials; rebuild(auth): the same request with credentials;
+     * serverUrl: the YAML's first server; files: { field: File } for multipart;
+     * via: 'browser' | 'server' to override Settings for this one call.
      */
-    async execute({ req, serverUrl, files = {}, settings, signal, forceBrowser }) {
-      if (forceBrowser || settings?.request?.useServerProxy === false) {
-        return executeInBrowser(req, { timeoutMs: settings?.request?.timeoutMs, files, signal });
+    async execute({ req, rebuild, serverUrl, files = {}, settings, signal, via }) {
+      const mode = via ?? settings?.request?.sendVia ?? 'browser';
+      if (mode !== 'server') {
+        const withAuth = rebuild ? rebuild({ ...settings.auth, ...local.get() }) : req;
+        return executeInBrowser(withAuth, { timeoutMs: settings?.request?.timeoutMs, files, signal });
       }
       const spec = { method: req.method, path: req.path, query: req.query, headers: req.headers, body: req.body, serverUrl };
       if (req.body?.kind === 'multipart') {

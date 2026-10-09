@@ -3,12 +3,12 @@
  * browser and API requests are sent from the browser. Credentials stay in
  * this tab (sessionStorage) and are forgotten when it closes.
  */
-import { SECRET_FIELDS, sanitizeSettings, withDefaults } from '@workbench/shared/settings';
+import { sanitizeSettings, withDefaults } from '@workbench/shared/settings';
+import { createLocalSecrets } from './localSecrets.js';
 import { executeInBrowser } from './browserExecute.js';
 import { ApiError } from './errors.js';
 
 const SETTINGS_KEY = 'ppiwb.settings';
-const SECRET_KEY = 'ppiwb.secrets';
 
 const read = (store, key, fallback) => {
   try {
@@ -27,15 +27,8 @@ const write = (store, key, value) => {
 
 export function createBrowserBackend() {
   let memorySettings = read(globalThis.localStorage ?? { getItem: () => null }, SETTINGS_KEY, {});
-  let secrets = read(globalThis.sessionStorage ?? { getItem: () => null }, SECRET_KEY, {});
-
-  const publicSettings = () => {
-    const s = withDefaults(memorySettings);
-    s.auth.tokenSet = !!secrets.token;
-    s.auth.passwordSet = !!secrets.password;
-    s.auth.apiKeyValueSet = !!secrets.apiKeyValue;
-    return s;
-  };
+  const local = createLocalSecrets();
+  const publicSettings = () => local.flags(withDefaults(memorySettings));
 
   return {
     kind: 'browser',
@@ -46,18 +39,11 @@ export function createBrowserBackend() {
       save: async (input, secretUpdates = {}) => {
         let next;
         try {
-          next = sanitizeSettings(input, publicSettings());
+          next = sanitizeSettings({ ...input, request: { ...input?.request, sendVia: 'browser' } }, publicSettings());
         } catch (err) {
           throw new ApiError('SETTINGS_INVALID', err.message, { fields: err.fields });
         }
-        const nextSecrets = { ...secrets };
-        for (const f of SECRET_FIELDS) {
-          if (!(f in secretUpdates)) continue;
-          if (typeof secretUpdates[f] === 'string' && secretUpdates[f] !== '') nextSecrets[f] = secretUpdates[f];
-          else delete nextSecrets[f];
-        }
-        secrets = nextSecrets;
-        if (globalThis.sessionStorage) write(sessionStorage, SECRET_KEY, secrets);
+        local.apply(secretUpdates);
         const { tokenSet: _a, passwordSet: _b, apiKeyValueSet: _c, ...auth } = next.auth;
         memorySettings = { ...next, auth };
         if (globalThis.localStorage) write(localStorage, SETTINGS_KEY, memorySettings);
@@ -69,7 +55,7 @@ export function createBrowserBackend() {
 
     /** The browser sends the request itself; credentials come from this tab's session. */
     async execute({ req, files = {}, settings, signal, rebuild }) {
-      const withAuth = rebuild ? rebuild({ ...settings.auth, ...secrets }) : req;
+      const withAuth = rebuild ? rebuild({ ...settings.auth, ...local.get() }) : req;
       return executeInBrowser(withAuth, { timeoutMs: settings?.request?.timeoutMs, files, signal });
     },
   };

@@ -882,3 +882,15 @@
   padding-top: 8px;
   border-top: 1px solid var(--border);
 }
+
+.send-via {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.send-via code,
+.callout code {
+  font-size: var(--fs-xs);
+}

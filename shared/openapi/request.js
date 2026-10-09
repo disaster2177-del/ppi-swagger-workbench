@@ -185,3 +185,21 @@ export function isFormFriendly(schema, root) {
   if (error || recursive) return false;
   return s.type !== undefined || Array.isArray(s.oneOf) || Array.isArray(s.anyOf);
 }
+
+/**
+ * When the base already ends with the segment the endpoint starts with
+ * (Base URL ".../v1/users" + endpoint "/users" → ".../v1/users/users"),
+ * return that segment so the UI can warn. Not changed automatically:
+ * some APIs really do repeat a segment.
+ */
+export function duplicatedSegment(base, path) {
+  let basePath = base ?? '';
+  try {
+    basePath = new URL(base).pathname;
+  } catch {
+    /* relative base */
+  }
+  const last = basePath.replace(/\/+$/, '').split('/').pop();
+  const first = String(path ?? '').replace(/^\/+/, '').split(/[/?]/)[0];
+  return last && first && !first.startsWith('{') && last.toLowerCase() === first.toLowerCase() ? last : null;
+}

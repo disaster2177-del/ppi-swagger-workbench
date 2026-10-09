@@ -48,7 +48,12 @@ If you later want one central list of YAML files per user (shared across their P
 
 ## 4. Executing APIs from the VM
 
-"Execute" normally goes through the server (Settings → Requests → *Send requests through the server*). The **VM** then has to reach the target API.
+Settings → Requests → **Send requests from** decides who calls the API:
+
+- **Your browser** (default): DevTools → Network shows the real `GET` / `POST` / `PUT` / `DELETE` to the API. The user's PC must reach the API, and the API must send CORS headers allowing the app's address (`Access-Control-Allow-Origin`). Credentials for this mode stay in the user's browser tab.
+- **The server (VM)**: DevTools shows `POST /api/workbench/execute`; the VM calls the API. No CORS needed, credentials are stored encrypted on the server, but the **VM** has to reach the API (table below).
+
+If one way fails, the error card offers to try the other way.
 
 | Message in the app | Cause | Fix |
 |---|---|---|
