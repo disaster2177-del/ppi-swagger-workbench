@@ -63,6 +63,9 @@ export function createServerBackend() {
 
     samples: () => http('GET', '/samples'),
 
+    /** Credentials for requests sent from this browser (Swagger UI view, browser mode). */
+    browserAuth: (settings) => ({ ...settings.auth, ...local.get() }),
+
     /**
      * req: built request without credentials; rebuild(auth): the same request with credentials;
      * serverUrl: the YAML's first server; files: { field: File } for multipart;

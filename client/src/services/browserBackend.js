@@ -53,6 +53,9 @@ export function createBrowserBackend() {
 
     samples: async () => (await import('./demoSamples.js')).default,
 
+    /** Credentials for requests sent from this browser (Swagger UI view, browser mode). */
+    browserAuth: (settings) => ({ ...settings.auth, ...local.get() }),
+
     /** The browser sends the request itself; credentials come from this tab's session. */
     async execute({ req, files = {}, settings, signal, rebuild }) {
       const withAuth = rebuild ? rebuild({ ...settings.auth, ...local.get() }) : req;

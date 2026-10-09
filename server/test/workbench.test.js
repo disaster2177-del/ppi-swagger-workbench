@@ -110,3 +110,17 @@ test('timeouts, bad paths, missing base and blocked targets are refused clearly'
     delete process.env.WORKBENCH_ALLOWED_HOSTS;
   }
 });
+
+test('Swagger UI view: a full URL is called as-is, still with server auth and target checks', async () => {
+  const settings = new SettingsService(memoryRepo());
+  await settings.update({ auth: { type: 'apiKey', apiKeyName: 'X-API-Key', apiKeyIn: 'header' } }, { apiKeyValue: 'k1' });
+  const sink = {};
+  const exec = new ExecuteService({ settings, fetchImpl: okFetch(sink) });
+  await exec.execute({ method: 'PATCH', url: 'https://api.example.com/v1/users/7?x=1', headers: {}, body: { kind: 'text', mediaType: 'application/json', text: '{"a":1}' } });
+  assert.equal(sink.url, 'https://api.example.com/v1/users/7?x=1');
+  assert.equal(sink.init.method, 'PATCH');
+  assert.equal(sink.init.headers['X-API-Key'], 'k1');
+  assert.equal(sink.init.body, '{"a":1}');
+  await assert.rejects(exec.execute({ method: 'GET', url: 'http://169.254.169.254/' }), (e) => e.code === 'TARGET_BLOCKED');
+  await assert.rejects(exec.execute({ method: 'GET', url: 'file:///etc/passwd' }), (e) => e.code === 'NO_BASE_URL');
+});

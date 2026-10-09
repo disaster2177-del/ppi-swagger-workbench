@@ -32,6 +32,11 @@ Both share one shell, one theme (light and dark), one set of components and one 
 5. Selecting a YAML file parses it and lists its APIs, grouped by tag, with coloured method badges. Both lists are searchable: files by name or title; APIs by path, method, summary, operationId or tag.
 6. Selecting an API renders its form on the right.
 
+**Two ways to view a YAML file** (switch in the workbench header, remembered per view mode):
+
+- **Swagger UI** (default on *Swagger Only*): the official Swagger UI (`swagger-ui-dist`) renders the file with tags, *Try it out*, *Authorize*, schemas and examples. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
+- **Forms** (default on *Side by Side*): the compact API list and generated forms described below.
+
 **Dynamic forms.** Everything is read from the YAML. Nothing about a particular API is in the code.
 
 | Schema | Rendered as |

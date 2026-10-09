@@ -63,6 +63,18 @@ export class ExecuteService {
 
   /** Build the final URL without sending anything (used by /execute and the tests). */
   async resolveUrl(spec) {
+    // Swagger UI view: the browser already resolved the full URL (servers + Base URL from Settings).
+    if (typeof spec?.url === 'string' && spec.url) {
+      const { settings, auth } = await this.settings.getForRequest();
+      let url;
+      try {
+        url = new URL(spec.url);
+      } catch {
+        throw new AppError('NO_BASE_URL', `"${spec.url}" is not a valid address.`);
+      }
+      if (!/^https?:$/.test(url.protocol)) throw new AppError('NO_BASE_URL', 'Only http:// and https:// addresses can be called.');
+      return { url, settings, auth };
+    }
     const path = String(spec?.path ?? '');
     if (!path.startsWith('/') || /^\/\//.test(path) || /[\r\n]/.test(path)) throw new AppError('REQUEST_FAILED', 'The endpoint path is not valid.');
     if (/\{[^}]+\}/.test(path)) throw new AppError('REQUIRED_FIELDS', 'Fill in every path parameter before sending.');
@@ -83,6 +95,7 @@ export class ExecuteService {
 
   /**
    * spec = { method, path, query: [[k, v]], headers: {}, body: {kind, mediaType, json|text|fields}, serverUrl? }
+   *     or { method, url, headers, body }  (full URL, from the Swagger UI view)
    * files = multer files for multipart bodies, fieldname "file:<field>"
    */
   async execute(spec, files = []) {

@@ -6,13 +6,17 @@
  * Flow: select project → its YAML files → select a file (parsed) → its APIs →
  * select an API → form generated from the definition → Execute.
  */
-import { useRef, useState } from 'react';
-import { Button, EmptyState, Icon, IconButton, Select } from '../../ui/index.jsx';
+import { lazy, Suspense, useRef, useState } from 'react';
+import { Button, EmptyState, Icon, IconButton, Select, Tabs } from '../../ui/index.jsx';
+
+// Swagger UI is large (~1.5 MB); load it only when the Swagger UI view is used.
+const SwaggerView = lazy(() => import('./SwaggerView.jsx'));
 import { EndpointList, YamlFileList, ApiOverview } from './Navigator.jsx';
 import OperationForm from './OperationForm.jsx';
 import { ProjectForm, ProjectsModal, UploadReportModal } from './ProjectDialogs.jsx';
 
-export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden }) {
+export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden, viewStyle = 'forms', onViewStyle }) {
+  const swaggerStyle = viewStyle === 'swagger';
   const inputRef = useRef(null);
   const [manageOpen, setManageOpen] = useState(false);
   const accept = [...settings.validation.allowedExtensions, 'application/yaml', 'text/yaml', 'application/x-yaml'].join(',');
@@ -42,6 +46,17 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden }) 
           <IconButton icon="folder" label="Manage projects" onClick={() => setManageOpen(true)} disabled={!wb.source} />
         </div>
         <div className="wb-upload">
+          {onViewStyle && (
+            <Tabs
+              label="How to show the API"
+              value={viewStyle}
+              onChange={onViewStyle}
+              items={[
+                { id: 'swagger', label: 'Swagger UI', icon: 'api' },
+                { id: 'forms', label: 'Forms', icon: 'list' },
+              ]}
+            />
+          )}
           <input
             ref={inputRef}
             type="file"
@@ -91,10 +106,10 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden }) 
           </div>
         </div>
       ) : (
-        <div className="wb-body">
-          <nav className="wb-nav" aria-label="YAML files and APIs">
+        <div className={`wb-body${swaggerStyle ? ' swagger-style' : ''}`}>
+          <nav className="wb-nav" aria-label={swaggerStyle ? 'YAML files' : 'YAML files and APIs'}>
             <YamlFileList wb={wb} onDropFiles={wb.uploadFiles} />
-            <EndpointList wb={wb} />
+            {!swaggerStyle && <EndpointList wb={wb} />}
           </nav>
           <div className="wb-main">
             {!wb.projectId ? (
@@ -123,6 +138,10 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden }) 
               <EmptyState icon="error" title="This YAML file can't be shown">
                 {wb.detail.error.message}
               </EmptyState>
+            ) : wb.detail?.model && swaggerStyle ? (
+              <Suspense fallback={<EmptyState icon="refresh" title="Loading Swagger UI…" />}>
+                <SwaggerView wb={wb} settings={settings} />
+              </Suspense>
             ) : wb.detail?.model && wb.operation ? (
               <OperationForm key={`${wb.yamlFileId}::${wb.operation.id}`} wb={wb} settings={settings} onOpenSettings={onOpenSettings} />
             ) : wb.detail?.model ? (

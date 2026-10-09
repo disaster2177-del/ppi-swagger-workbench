@@ -894,3 +894,111 @@
 .callout code {
   font-size: var(--fs-xs);
 }
+
+/* ---------------------------------------------------------------- Swagger UI view */
+.wb-body.swagger-style {
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+}
+
+.wb-body.swagger-style .wb-main {
+  padding: 0;
+  background: var(--surface);
+}
+
+.wb-body.swagger-style .wb-main > .empty-state {
+  margin-top: 8vh;
+}
+
+.swagger-host {
+  min-height: 100%;
+  background: var(--surface);
+}
+
+.swagger-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 7px 16px;
+  font-size: var(--fs-sm);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.swagger-bar code {
+  font-size: var(--fs-xs);
+}
+
+/* Swagger UI uses its own fonts (not available offline); use the app's. */
+.swagger-host .swagger-ui,
+.swagger-host .swagger-ui .info .title,
+.swagger-host .swagger-ui .opblock-tag,
+.swagger-host .swagger-ui .opblock .opblock-summary-description,
+.swagger-host .swagger-ui .btn,
+.swagger-host .swagger-ui select,
+.swagger-host .swagger-ui input,
+.swagger-host .swagger-ui textarea,
+.swagger-host .swagger-ui table,
+.swagger-host .swagger-ui .parameter__name,
+.swagger-host .swagger-ui .response-col_status,
+.swagger-host .swagger-ui .model-title,
+.swagger-host .swagger-ui label {
+  font-family: var(--font-ui);
+}
+
+.swagger-host .swagger-ui .opblock-summary-path,
+.swagger-host .swagger-ui .opblock-summary-method,
+.swagger-host .swagger-ui .microlight,
+.swagger-host .swagger-ui code,
+.swagger-host .swagger-ui .model {
+  font-family: var(--font-mono);
+}
+
+.swagger-host .swagger-ui .wrapper {
+  padding: 0 20px;
+  max-width: 1200px;
+}
+
+.swagger-host .swagger-ui .information-container .info {
+  margin: 20px 0;
+}
+
+.swagger-host .swagger-ui .scheme-container {
+  box-shadow: none;
+  border-block: 1px solid #e3e3e3;
+  padding: 16px 0;
+}
+
+.swagger-host .swagger-ui .filter-container .operation-filter-input {
+  border-radius: var(--r-md);
+}
+
+.swagger-host .swagger-ui .opblock-tag {
+  font-size: 20px;
+}
+
+/* Dark theme: Swagger UI only ships a light theme. Invert it (keeping hues),
+   then turn code blocks and images back so they keep their own colours. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .swagger-host .swagger-root {
+    filter: invert(0.92) hue-rotate(180deg);
+    background: #fff;
+  }
+  :root:not([data-theme='light']) .swagger-host .swagger-root :is(pre.microlight, .highlight-code, img, .model-box-control svg) {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+:root[data-theme='dark'] .swagger-host .swagger-root {
+  filter: invert(0.92) hue-rotate(180deg);
+  background: #fff;
+}
+
+:root[data-theme='dark'] .swagger-host .swagger-root :is(pre.microlight, .highlight-code, img, .model-box-control svg) {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@container wb (max-width: 760px) {
+  .wb-body.swagger-style {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

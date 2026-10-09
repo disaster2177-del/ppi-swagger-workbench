@@ -11,7 +11,7 @@ You need two machines:
 
 Once installed, nothing in the app needs the internet:
 
-- **Browser side:** no CDNs and no web fonts. React, Turf.js, Socket.IO and the example YAML files are all inside the app.
+- **Browser side:** no CDNs and no web fonts. React, Turf.js, Socket.IO, Swagger UI and the example YAML files are all inside the app.
 - **Users' data:** projects and YAML files stay in each user's browser.
 - **Server side:** MongoDB and Kafka run as local containers.
 
@@ -175,6 +175,7 @@ To update a dependency: edit the file below on the build machine, rebuild the bu
 | react, react-dom | ^19.3.0 | `client/package.json` | user interface |
 | socket.io-client | ^4.8.4 | `client/package.json` | live PPI updates |
 | @turf/* (8 packages) | ^7.4.0 | `client/package.json` | geodesic PPI engine |
+| swagger-ui-dist | ^5.32.0 | `client/package.json` | the Swagger UI view (online validator switched off, so it works offline) |
 | vite, @vitejs/plugin-react, vite-plugin-singlefile, vitest | ^8.3.1, ^6.1.1, ^2.3.3, ^5.0.3 | `client/package.json` (devDependencies) | build and tests only, not in the running app |
 | concurrently | ^10.0.5 | `package.json` (root, devDependency) | `npm run dev` only |
 
