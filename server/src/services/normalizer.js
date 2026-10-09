@@ -125,7 +125,7 @@ function rangeNm(obj, field) {
  * Accepts { lat, lon } / { latitude, longitude } / [lon, lat] (GeoJSON order)
  * or { range, bearing } (+ rangeKm / rangeM / rangeYd variants).
  */
-export function normalisePosition(p, field = 'position') {
+function normalisePosition(p, field = 'position') {
   if (p === undefined || p === null) throw new ValidationError(`"${field}" is required`);
 
   if (Array.isArray(p)) {
@@ -187,7 +187,7 @@ function fromGeoJson(g, requestedKind) {
   }
 }
 
-export function normaliseKind(kind) {
+function normaliseKind(kind) {
   if (!kind) return undefined;
   const key = String(kind).trim().toUpperCase().replace(/[\s-]+/g, '_');
   const resolved = KIND_ALIASES[key] ?? key;
@@ -195,7 +195,7 @@ export function normaliseKind(kind) {
   return resolved;
 }
 
-export function normaliseIdentity(identity) {
+function normaliseIdentity(identity) {
   if (!identity) return 'UNKNOWN';
   const key = String(identity).trim().toUpperCase().replace(/[\s-]+/g, '_');
   return IDENTITY_ALIASES[key] ?? 'UNKNOWN';
@@ -216,7 +216,7 @@ function normaliseTimestamp(ts, fallback) {
 /**
  * Validate and normalise the geometry block for a given kind.
  */
-export function normaliseGeometry(kind, g = {}) {
+function normaliseGeometry(kind, g = {}) {
   switch (kind) {
     case 'OWNSHIP': {
       const position = normalisePosition(g.position ?? g.center ?? g, 'geometry.position');

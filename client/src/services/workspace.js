@@ -18,7 +18,7 @@ import {
 import { ApiError } from './errors.js';
 
 /** Approximate per-origin localStorage limit in major browsers. */
-export const BROWSER_QUOTA_BYTES = 5 * 1024 * 1024;
+const BROWSER_QUOTA_BYTES = 5 * 1024 * 1024;
 
 function usableLocalStorage() {
   try {

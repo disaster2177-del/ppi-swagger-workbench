@@ -16,7 +16,7 @@ export function fileExtension(name = '') {
 }
 
 /** Byte length of a string as UTF-8, without needing Buffer or TextEncoder. */
-export function utf8Length(text) {
+function utf8Length(text) {
   let n = 0;
   for (let i = 0; i < text.length; i += 1) {
     const c = text.charCodeAt(i);

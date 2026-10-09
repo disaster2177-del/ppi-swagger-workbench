@@ -29,7 +29,7 @@ export function effectiveBase({ baseUrl = '', basePath = '' } = {}, servers = []
   return joinUrl(base, basePath);
 }
 
-export function fillPath(path, values = {}) {
+function fillPath(path, values = {}) {
   return path.replace(/\{([^}]+)\}/g, (_, name) => {
     const v = values[name];
     return v === undefined || v === '' ? `{${name}}` : encodeURIComponent(String(v));
@@ -42,14 +42,6 @@ function serialiseQueryValue(v) {
 }
 
 /** Header values must be single-line text. Returns the offending header name or null. */
-export function findInvalidHeader(headers) {
-  for (const [k, v] of Object.entries(headers)) {
-    if (!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(k)) return k;
-    if (/[\r\n]/.test(String(v))) return k;
-  }
-  return null;
-}
-
 /**
  * Build the request description.
  *  operation   normalised operation (model.js)

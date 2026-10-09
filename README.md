@@ -5,7 +5,7 @@ One application for two jobs:
 - **PPI**: the naval radar PPI scope, fed live from Kafka (NMEA 0183, AIS, GeoJSON, canonical JSON) through Socket.IO, with MongoDB history. Full reference: [docs/PPI.md](docs/PPI.md).
 - **Swagger / OpenAPI workbench**: project-based YAML management. Upload many OpenAPI 3.x / Swagger 2.0 YAML files per project, browse their APIs, and run any API from a form generated from the YAML.
 
-Both share one shell, one theme (light and dark), one set of components and one Express server. It is built to run in Docker on a VM that many people open from their own PCs: see **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+Both share one shell, one dark theme, one set of components and one Express server. It is built to run in Docker on a VM that many people open from their own PCs: see **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
 **Each user's projects and YAML files are stored in their own browser (`localStorage`), not on the server.** If PC 1 uploads 5 files and PC 2 uploads 3, PC 1 sees its 5 and PC 2 its 3. Nobody sees a combined list. A reload reopens the user's workspace and last selection.
 
@@ -21,7 +21,7 @@ Both share one shell, one theme (light and dark), one set of components and one 
 
 ## What you can do
 
-**View modes.** *PPI Only*, *Side by Side* (default, with a draggable divider) and *Swagger Only*, plus *Settings*. The left sidebar (scope controls, projects) and the right sidebar (PPI objects, details, rejected messages, API activity) each have their own toggle. A closed sidebar is removed and the main area expands. Below 1100 px the sidebars open over the content; below 900 px the panes stack.
+**View modes.** *PPI Only*, *Side by Side* (with a draggable divider) and *Swagger Only*, plus *Settings*. The app opens in *Side by Side* the first time, then in the last view used in that browser. The left sidebar (scope controls, projects) and the right sidebar (PPI objects, details, rejected messages, API activity) each have their own toggle. A closed sidebar is removed and the main area expands. Below 1100 px the sidebars open over the content; below 900 px the panes stack.
 
 **Projects → YAML files → APIs → form.**
 
@@ -34,7 +34,7 @@ Both share one shell, one theme (light and dark), one set of components and one 
 
 **Two ways to view a YAML file** (switch in the workbench header, remembered per view mode):
 
-- **Swagger UI** (default on *Swagger Only*): the official Swagger UI (`swagger-ui-dist`) renders the file with tags, *Try it out*, *Authorize*, schemas and examples. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
+- **Swagger UI** (default on *Swagger Only*): the official Swagger UI (`swagger-ui-dist`, in its dark mode) renders the file with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section (every schema in `components.schemas` / `definitions`, click one to expand it). Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
 - **Forms** (default on *Side by Side*): the compact API list and generated forms described below.
 
 **Dynamic forms.** Everything is read from the YAML. Nothing about a particular API is in the code.
@@ -63,7 +63,6 @@ The form covers path, query, header and cookie parameters and the request body, 
 - **Connection**: environments, each with a Base URL and Base Path; one is active. A live example URL is shown.
 - **Requests**: timeout, default headers, and whether to send requests through the server.
 - **Authentication**: none, Bearer, Basic or API key (header or query). Secrets are write-only, encrypted with AES-256-GCM at rest, and never returned to the browser.
-- **Defaults**: default view mode, theme. The default project is chosen per browser.
 - **Your workspace**: storage used in this browser, plus **Export**, **Import** and **Clear**.
 - **YAML validation**: Strict, Standard or Lenient; maximum file size; allowed extensions; what to do with duplicate file names (replace, keep both, or reject).
 
@@ -104,7 +103,7 @@ client/src/
   App.jsx                     shell: top nav, view modes, sidebars, split view
   ui/                         shared components: Button, Field, Select, Switch, ChipsInput, Modal,
                               Toast, Tabs, MethodBadge, …
-  styles/                     tokens.css (one theme, light + dark), base, ui, shell, ppi, workbench, settings
+  styles/                     tokens.css (the dark theme), base, ui, shell, ppi, workbench, settings
   features/ppi/               the PPI scope and its panels (moved, not rewritten) + usePpiController
   features/workbench/         project bar, upload, YAML/API navigator, SchemaField (dynamic form),
                               OperationForm, ResponseViewer, dialogs, useWorkbench

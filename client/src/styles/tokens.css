@@ -1,49 +1,47 @@
 /*
  * Design tokens for the whole application (PPI + API workbench + settings).
- * Concept: an operations console. Slate neutrals with a blue bias, one
+ * One theme: dark. An operations console with slate-blue neutrals, one
  * phosphor-teal accent taken from the radar display, uppercase micro-labels,
  * monospace for anything measured or machine-readable.
- * The radar scope itself is an instrument and stays dark in both themes
- * (--scope-* tokens).
  */
 :root {
-  --bg: #eaeff3;
-  --surface: #ffffff;
-  --surface-2: #f4f7f9;
-  --surface-3: #e6ecf0;
-  --border: #d3dce3;
-  --border-strong: #b6c3cd;
-  --text: #12202b;
-  --text-2: #3b4b58;
-  --muted: #627485;
-  --accent: #0a7457;
-  --accent-strong: #075e47;
-  --accent-soft: rgba(10, 116, 87, 0.1);
-  --accent-text: #ffffff;
-  --focus: rgba(10, 116, 87, 0.35);
+  --bg: #060c12;
+  --surface: #0b1620;
+  --surface-2: #0f1e2a;
+  --surface-3: #152837;
+  --border: #1b3344;
+  --border-strong: #2b4b60;
+  --text: #d3e4ee;
+  --text-2: #a8bfcc;
+  --muted: #7a93a4;
+  --accent: #34d399;
+  --accent-strong: #66e2b5;
+  --accent-soft: rgba(52, 211, 153, 0.13);
+  --accent-text: #04140e;
+  --focus: rgba(52, 211, 153, 0.4);
 
-  --good: #0f7a4b;
-  --good-soft: rgba(15, 122, 75, 0.1);
-  --warn: #965800;
-  --warn-soft: rgba(201, 122, 0, 0.13);
-  --bad: #c22d2d;
-  --bad-soft: rgba(194, 45, 45, 0.1);
-  --info: #1b5fc1;
-  --info-soft: rgba(27, 95, 193, 0.1);
+  --good: #4fd1a1;
+  --good-soft: rgba(79, 209, 161, 0.13);
+  --warn: #ffb74d;
+  --warn-soft: rgba(255, 183, 77, 0.13);
+  --bad: #ff6b6b;
+  --bad-soft: rgba(255, 107, 107, 0.13);
+  --info: #6aa8ff;
+  --info-soft: rgba(106, 168, 255, 0.13);
 
-  --m-get: #1b5fc1;
-  --m-post: #0f7a4b;
-  --m-put: #965800;
-  --m-patch: #7135b8;
-  --m-delete: #c22d2d;
-  --m-other: #56687a;
+  --m-get: #6aa8ff;
+  --m-post: #4fd1a1;
+  --m-put: #ffb74d;
+  --m-patch: #c39bff;
+  --m-delete: #ff6b6b;
+  --m-other: #93a7b6;
 
-  --shadow-1: 0 1px 2px rgba(18, 32, 43, 0.06), 0 1px 1px rgba(18, 32, 43, 0.04);
-  --shadow-2: 0 8px 28px rgba(18, 32, 43, 0.16), 0 2px 6px rgba(18, 32, 43, 0.08);
-  --scrim: rgba(10, 18, 26, 0.45);
-  --code-bg: #f1f4f7;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 10px 34px rgba(0, 0, 0, 0.55);
+  --scrim: rgba(0, 0, 0, 0.6);
+  --code-bg: #08121a;
 
-  /* the radar display (fixed, both themes) */
+  /* the radar display */
   --scope-bg: #050b11;
   --scope-glow: #07131c;
   --scope-panel: rgba(5, 11, 17, 0.72);
@@ -70,79 +68,5 @@
   --sidebar-w: 288px;
   --sidebar-right-w: 380px;
 
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #060c12;
-    --surface: #0b1620;
-    --surface-2: #0f1e2a;
-    --surface-3: #152837;
-    --border: #1b3344;
-    --border-strong: #2b4b60;
-    --text: #d3e4ee;
-    --text-2: #a8bfcc;
-    --muted: #7a93a4;
-    --accent: #34d399;
-    --accent-strong: #66e2b5;
-    --accent-soft: rgba(52, 211, 153, 0.13);
-    --accent-text: #04140e;
-    --focus: rgba(52, 211, 153, 0.4);
-    --good: #4fd1a1;
-    --good-soft: rgba(79, 209, 161, 0.13);
-    --warn: #ffb74d;
-    --warn-soft: rgba(255, 183, 77, 0.13);
-    --bad: #ff6b6b;
-    --bad-soft: rgba(255, 107, 107, 0.13);
-    --info: #6aa8ff;
-    --info-soft: rgba(106, 168, 255, 0.13);
-    --m-get: #6aa8ff;
-    --m-post: #4fd1a1;
-    --m-put: #ffb74d;
-    --m-patch: #c39bff;
-    --m-delete: #ff6b6b;
-    --m-other: #93a7b6;
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-2: 0 10px 34px rgba(0, 0, 0, 0.55);
-    --scrim: rgba(0, 0, 0, 0.6);
-    --code-bg: #08121a;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme='dark'] {
-  --bg: #060c12;
-  --surface: #0b1620;
-  --surface-2: #0f1e2a;
-  --surface-3: #152837;
-  --border: #1b3344;
-  --border-strong: #2b4b60;
-  --text: #d3e4ee;
-  --text-2: #a8bfcc;
-  --muted: #7a93a4;
-  --accent: #34d399;
-  --accent-strong: #66e2b5;
-  --accent-soft: rgba(52, 211, 153, 0.13);
-  --accent-text: #04140e;
-  --focus: rgba(52, 211, 153, 0.4);
-  --good: #4fd1a1;
-  --good-soft: rgba(79, 209, 161, 0.13);
-  --warn: #ffb74d;
-  --warn-soft: rgba(255, 183, 77, 0.13);
-  --bad: #ff6b6b;
-  --bad-soft: rgba(255, 107, 107, 0.13);
-  --info: #6aa8ff;
-  --info-soft: rgba(106, 168, 255, 0.13);
-  --m-get: #6aa8ff;
-  --m-post: #4fd1a1;
-  --m-put: #ffb74d;
-  --m-patch: #c39bff;
-  --m-delete: #ff6b6b;
-  --m-other: #93a7b6;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-2: 0 10px 34px rgba(0, 0, 0, 0.55);
-  --scrim: rgba(0, 0, 0, 0.6);
-  --code-bg: #08121a;
   color-scheme: dark;
 }

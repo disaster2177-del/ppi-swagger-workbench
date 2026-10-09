@@ -22,11 +22,11 @@ const K = {
   endpoints: (id) => `${STORAGE_PREFIX}endpoints.${id}`,
 };
 
-export function isQuotaError(err) {
+function isQuotaError(err) {
   return !!err && (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22 || err.code === 1014);
 }
 
-export const STORAGE_FULL_MESSAGE =
+const STORAGE_FULL_MESSAGE =
   "This browser's storage is full, so the file was not saved. Delete YAML files you no longer need, or export the workspace and start a new one.";
 
 export function createLocalStorageStore(storage, { idPrefix = '' } = {}) {

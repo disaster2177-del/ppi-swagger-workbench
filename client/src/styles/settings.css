@@ -85,10 +85,6 @@
   margin-top: 8px;
 }
 
-.settings-section.subtle {
-  background: transparent;
-}
-
 .env-tabs {
   display: flex;
   flex-wrap: wrap;

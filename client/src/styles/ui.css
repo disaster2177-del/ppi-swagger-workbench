@@ -582,15 +582,6 @@
   max-height: 420px;
 }
 
-.kbd {
-  font: 600 10.5px var(--font-mono);
-  padding: 0 5px;
-  border: 1px solid var(--border-strong);
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  color: var(--text-2);
-}
-
 .spinner {
   width: 14px;
   height: 14px;

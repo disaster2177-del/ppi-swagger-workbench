@@ -8,7 +8,7 @@
 import { deref, isObject } from './schema.js';
 
 export const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'];
-export const PARAM_LOCATIONS = ['path', 'query', 'header', 'cookie'];
+const PARAM_LOCATIONS = ['path', 'query', 'header', 'cookie'];
 
 /** "openapi" for 3.x, "swagger" for 2.0, null otherwise. */
 export function detectFormat(def) {

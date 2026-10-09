@@ -8,7 +8,7 @@ import { createWorkspace } from './workspace.js';
 import { createServerBackend } from './serverBackend.js';
 import { createBrowserBackend } from './browserBackend.js';
 
-export const BROWSER_ONLY = import.meta.env?.VITE_DEMO === 'true';
+const BROWSER_ONLY = import.meta.env?.VITE_DEMO === 'true';
 
 export async function resolveDataSource() {
   const workspace = createWorkspace();

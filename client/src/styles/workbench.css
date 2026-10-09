@@ -962,12 +962,6 @@
   margin: 20px 0;
 }
 
-.swagger-host .swagger-ui .scheme-container {
-  box-shadow: none;
-  border-block: 1px solid #e3e3e3;
-  padding: 16px 0;
-}
-
 .swagger-host .swagger-ui .filter-container .operation-filter-input {
   border-radius: var(--r-md);
 }
@@ -976,25 +970,44 @@
   font-size: 20px;
 }
 
-/* Dark theme: Swagger UI only ships a light theme. Invert it (keeping hues),
-   then turn code blocks and images back so they keep their own colours. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .swagger-host .swagger-root {
-    filter: invert(0.92) hue-rotate(180deg);
-    background: #fff;
-  }
-  :root:not([data-theme='light']) .swagger-host .swagger-root :is(pre.microlight, .highlight-code, img, .model-box-control svg) {
-    filter: invert(1) hue-rotate(180deg);
-  }
+/* Swagger UI's own dark mode (html.dark-mode, set in index.html), with its
+   backgrounds matched to the app so the view blends into the workbench. */
+html.dark-mode {
+  background: var(--bg);
 }
 
-:root[data-theme='dark'] .swagger-host .swagger-root {
-  filter: invert(0.92) hue-rotate(180deg);
-  background: #fff;
+html.dark-mode .swagger-host .swagger-ui,
+html.dark-mode .swagger-host .swagger-ui .scheme-container,
+html.dark-mode .swagger-host .swagger-ui input,
+html.dark-mode .swagger-host .swagger-ui textarea,
+html.dark-mode .swagger-host .swagger-ui select[multiple] {
+  background-color: var(--surface);
 }
 
-:root[data-theme='dark'] .swagger-host .swagger-root :is(pre.microlight, .highlight-code, img, .model-box-control svg) {
-  filter: invert(1) hue-rotate(180deg);
+html.dark-mode .swagger-host .swagger-ui select {
+  background-color: var(--surface);
+}
+
+html.dark-mode .swagger-host .swagger-ui .scheme-container {
+  box-shadow: none;
+  border-block: 1px solid var(--border);
+  padding: 16px 0;
+}
+
+html.dark-mode .swagger-host .swagger-ui section.models {
+  border-color: var(--border);
+}
+
+html.dark-mode .swagger-host .swagger-ui section.models .model-container,
+html.dark-mode .swagger-host .swagger-ui .model-box,
+html.dark-mode .swagger-host .swagger-ui .json-schema-2020-12,
+html.dark-mode .swagger-host .swagger-ui .json-schema-2020-12 button {
+  background-color: var(--surface-2);
+}
+
+html.dark-mode .swagger-host .swagger-ui .dialog-ux .modal-ux {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 @container wb (max-width: 760px) {

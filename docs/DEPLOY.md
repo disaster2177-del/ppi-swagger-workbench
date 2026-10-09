@@ -33,7 +33,7 @@ git pull && docker compose up -d --build
 | Data | Where | Shared between users? |
 |---|---|---|
 | Projects, YAML files, endpoints | Each user's **browser** (`localStorage`, keys `ppiwb.v1.*`) | **No.** PC 1 sees only its files, PC 2 only its own |
-| Last selected project / API, default project, sidebar layout | Each user's browser | No |
+| Last selected project / API, last view mode, sidebar layout | Each user's browser | No |
 | Settings (environments, Base URL / Base Path, timeout, headers, auth, validation) | MongoDB on the VM | **Yes**, one set for everyone |
 | API credentials from Settings | MongoDB, AES-256-GCM encrypted with `SETTINGS_SECRET_KEY` | Used by the server for everyone; never sent to browsers |
 | PPI live picture and history | Kafka → server memory, MongoDB | Yes |

@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ToastProvider, useToast } from './ui/index.jsx';
 import { AppStateProvider, useAppState } from './state/AppState.jsx';
 import { usePref } from './state/prefs.js';
-import TopNav from './shell/TopNav.jsx';
+import TopNav, { VIEW_MODES } from './shell/TopNav.jsx';
 import Sidebar from './shell/Sidebar.jsx';
 import SplitView from './shell/SplitView.jsx';
 import usePpiController from './features/ppi/usePpiController.js';
@@ -45,7 +45,9 @@ function Shell() {
   const { source, settings, settingsStatus } = useAppState();
   const narrow = useMediaQuery('(max-width: 1100px)');
 
-  const [mode, setMode] = useState(null);
+  // Side by Side on first visit, then the last view used in this browser.
+  const [savedView, setMode] = usePref('viewMode', 'split');
+  const view = VIEW_MODES.some((m) => m.id === savedView) ? savedView : 'split';
   const [page, setPage] = useState('workspace');
   const [wideLeft, setWideLeft] = usePref('leftOpen', true);
   const [wideRight, setWideRight] = usePref('rightOpen', false);
@@ -57,12 +59,6 @@ function Shell() {
   const [styleSplit, setStyleSplit] = usePref('wbStyle.split', 'forms');
   const [leftTab, setLeftTab] = useState('scope');
   const [rightTab, setRightTab] = useState('objects');
-
-  // Default view mode from Settings, applied once when settings arrive.
-  useEffect(() => {
-    if (mode === null && settingsStatus !== 'loading') setMode(settings.defaults?.viewMode ?? 'split');
-  }, [mode, settingsStatus, settings.defaults?.viewMode]);
-  const view = mode ?? 'split';
 
   const leftOpen = narrow ? narrowLeft : wideLeft;
   const rightOpen = narrow ? narrowRight : wideRight;
@@ -100,7 +96,7 @@ function Shell() {
     if (m === 'swagger') {
       setLeftTab('projects');
       setRightTab('activity');
-    } else if (mode === 'swagger') {
+    } else if (view === 'swagger') {
       setLeftTab('scope');
       setRightTab('objects');
     }

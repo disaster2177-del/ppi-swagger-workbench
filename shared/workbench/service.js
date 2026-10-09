@@ -17,7 +17,7 @@ import { processYamlFile, safeFileName, fileExtension } from './ingest.js';
 
 const nowIso = () => new Date().toISOString();
 
-export function slugify(name) {
+function slugify(name) {
   return (
     String(name)
       .toLowerCase()
@@ -38,7 +38,7 @@ function cleanProjectInput({ name, description } = {}) {
 }
 
 /** Summary of a YAML file without its content (for lists). */
-export function yamlSummary(f) {
+function yamlSummary(f) {
   const { content: _content, ...rest } = f;
   return rest;
 }

@@ -8,7 +8,7 @@ import { enumLabel, isObject, resolveSchema } from './schema.js';
 
 const MAX_DEPTH = 8;
 
-export const isEmpty = (v) =>
+const isEmpty = (v) =>
   v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0) || (isObject(v) && Object.keys(v).length === 0);
 
 /** Value to pre-fill: the schema's default (recursively for objects), else undefined. */
@@ -245,17 +245,6 @@ function validateProperties(s, value, root, { path, depth, open }) {
 }
 
 /** Convert a form string to the schema's primitive type ("12" → 12, "true" → true). */
-export function coerceValue(schema, value, root) {
-  const { schema: s } = resolveSchema(schema, root);
-  if (value === '' || value === undefined || value === null) return undefined;
-  if ((s.type === 'integer' || s.type === 'number') && typeof value === 'string') {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : value;
-  }
-  if (s.type === 'boolean' && typeof value === 'string') return value === 'true';
-  return value;
-}
-
 function structuredCloneSafe(v) {
   try {
     return typeof structuredClone === 'function' ? structuredClone(v) : JSON.parse(JSON.stringify(v));

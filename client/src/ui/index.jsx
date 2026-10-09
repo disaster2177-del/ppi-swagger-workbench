@@ -2,7 +2,7 @@
  * Shared UI kit. Every screen (PPI, workbench, settings) builds from these,
  * so buttons, inputs, badges and dialogs look and behave the same everywhere.
  */
-import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
 
 export { default as Icon } from './Icon.jsx';
@@ -226,10 +226,6 @@ export function CopyButton({ text, label = 'Copy', targetRef }) {
       {state === 'done' ? 'Copied' : state === 'selected' ? 'Selected — press Ctrl+C' : label}
     </Button>
   );
-}
-
-export function useStableId(prefix = 'f') {
-  return `${prefix}-${useId().replace(/:/g, '')}`;
 }
 
 export function formatBytes(n) {

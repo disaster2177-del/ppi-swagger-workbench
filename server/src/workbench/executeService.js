@@ -42,7 +42,7 @@ function allowedHosts() {
     .filter(Boolean);
 }
 
-export function checkTarget(url) {
+function checkTarget(url) {
   const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   if (/^169\.254\./.test(host) || host === 'metadata.google.internal') {
     throw new AppError('TARGET_BLOCKED', 'Requests to cloud metadata addresses are not allowed.', { status: 403 });

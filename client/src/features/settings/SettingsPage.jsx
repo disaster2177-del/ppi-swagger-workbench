@@ -1,6 +1,6 @@
 /**
  * Settings: where requests go (environments with Base URL + Base Path),
- * request behaviour, authentication, defaults and YAML validation.
+ * request behaviour, authentication, YAML validation and this browser's workspace.
  * Credentials are write-only: once saved they show as "saved" and are never
  * sent back to the browser.
  */
@@ -10,19 +10,16 @@ import { DUPLICATE_POLICIES, SettingsValidationError, VALIDATION_MODES, sanitize
 import { Badge, Button, ChipsInput, Field, Icon, IconButton, Select, Switch, TextInput, useToast } from '../../ui/index.jsx';
 import { useAppState } from '../../state/AppState.jsx';
 import { toUserError } from '../../services/errors.js';
-import { readPref, writePref } from '../../state/prefs.js';
 import { StoragePanel } from '../workbench/SidebarPanels.jsx';
 
 const SECTIONS = [
   ['connection', 'Connection', 'globe'],
   ['request', 'Requests', 'sliders'],
   ['auth', 'Authentication', 'key'],
-  ['defaults', 'Defaults', 'settings'],
   ['validation', 'YAML validation', 'shield'],
   ['storage', 'Your workspace', 'folder'],
 ];
 
-const VIEW_LABELS = { ppi: 'PPI Only', split: 'Side by Side', swagger: 'Swagger Only' };
 const MODE_TEXT = {
   strict: { title: 'Strict', text: 'Must be OpenAPI 3.x or Swagger 2.0, and any warning blocks the upload.' },
   standard: { title: 'Standard', text: 'Must be OpenAPI 3.x or Swagger 2.0. Warnings are shown but the file is saved.' },
@@ -73,7 +70,6 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
   const [secrets, setSecrets] = useState({});
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const [defaultProject, setDefaultProject] = useState(() => readPref('defaultProjectId', ''));
 
   useEffect(() => {
     setDraft(clone(settings));
@@ -373,46 +369,6 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                   />
                 </>
               )}
-            </div>
-          </section>
-
-          {/* ------------------------------------------------------------ defaults */}
-          <section id="settings-defaults" className="settings-section card">
-            <h2>Defaults</h2>
-            <div className="form-grid">
-              <Field id="set-def-project" label="Default project" help="Opened when this browser starts the app without a previous selection. Saved in this browser only.">
-                <Select
-                  id="set-def-project"
-                  value={defaultProject}
-                  onChange={(e) => {
-                    setDefaultProject(e.target.value);
-                    writePref('defaultProjectId', e.target.value);
-                  }}
-                >
-                  <option value="">None</option>
-                  {wb.projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field id="set-def-view" label="Default view mode" help="The view the app opens in.">
-                <Select id="set-def-view" value={draft.defaults.viewMode} onChange={(e) => set('defaults.viewMode', e.target.value)}>
-                  {Object.entries(VIEW_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field id="set-theme" label="Theme">
-                <Select id="set-theme" value={draft.defaults.theme} onChange={(e) => set('defaults.theme', e.target.value)}>
-                  <option value="system">Match system</option>
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </Select>
-              </Field>
             </div>
           </section>
 

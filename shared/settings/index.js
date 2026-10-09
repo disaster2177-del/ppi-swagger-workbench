@@ -6,9 +6,7 @@
  * whether each one is set; see server/src/workbench/services/settingsService.js.
  */
 
-export const VIEW_MODES = ['ppi', 'split', 'swagger'];
-export const THEMES = ['system', 'light', 'dark'];
-export const AUTH_TYPES = ['none', 'bearer', 'basic', 'apiKey'];
+const AUTH_TYPES = ['none', 'bearer', 'basic', 'apiKey'];
 export const VALIDATION_MODES = ['strict', 'standard', 'lenient'];
 export const DUPLICATE_POLICIES = ['replace', 'rename', 'reject'];
 export const SECRET_FIELDS = ['token', 'password', 'apiKeyValue'];
@@ -32,10 +30,6 @@ export const DEFAULT_SETTINGS = Object.freeze({
     tokenSet: false,
     passwordSet: false,
     apiKeyValueSet: false,
-  },
-  defaults: {
-    viewMode: 'split',
-    theme: 'system',
   },
   validation: {
     mode: 'standard',
@@ -61,7 +55,7 @@ export class SettingsValidationError extends Error {
 }
 
 /** Accepts "", "https://host", "https://host/prefix", or a relative "/prefix". */
-export function checkBaseUrl(value) {
+function checkBaseUrl(value) {
   const v = value.trim();
   if (!v) return null;
   if (v.startsWith('/')) return null;
@@ -75,7 +69,7 @@ export function checkBaseUrl(value) {
   }
 }
 
-export function checkBasePath(value) {
+function checkBasePath(value) {
   const v = value.trim();
   if (!v) return null;
   if (!v.startsWith('/')) return 'Start the base path with "/", for example /api/v1';
@@ -138,12 +132,6 @@ export function sanitizeSettings(input = {}, current = DEFAULT_SETTINGS) {
   };
   if (auth.type === 'apiKey' && !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(auth.apiKeyName)) fields['auth.apiKeyName'] = 'Use letters, digits and - only.';
 
-  const d = { ...current.defaults, ...(src.defaults ?? {}) };
-  const defaults = {
-    viewMode: pick(d.viewMode, VIEW_MODES, 'split'),
-    theme: pick(d.theme, THEMES, 'system'),
-  };
-
   const v = { ...current.validation, ...(src.validation ?? {}) };
   const allowedExtensions = (Array.isArray(v.allowedExtensions) ? v.allowedExtensions : ['.yaml', '.yml'])
     .map((x) => str(x, 10).trim().toLowerCase())
@@ -159,7 +147,7 @@ export function sanitizeSettings(input = {}, current = DEFAULT_SETTINGS) {
   };
 
   if (Object.keys(fields).length) throw new SettingsValidationError(fields);
-  return { environments, activeEnvironmentId, request, auth, defaults, validation };
+  return { environments, activeEnvironmentId, request, auth, validation };
 }
 
 /** The environment requests currently go to. */

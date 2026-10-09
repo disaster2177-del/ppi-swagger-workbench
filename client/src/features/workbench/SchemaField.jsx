@@ -481,7 +481,7 @@ function VariantField({ s, open, root, value, onChange, path, errors, depth, req
 
 // --------------------------------------------------------------------------- JSON fallback
 
-export function JsonEditor({ id, value, onChange, rows = 5 }) {
+function JsonEditor({ id, value, onChange, rows = 5 }) {
   const toText = (v) => (v === undefined ? '' : typeof v === 'string' ? v : JSON.stringify(v, null, 2));
   const [text, setText] = useState(() => toText(value));
   const [bad, setBad] = useState(null);

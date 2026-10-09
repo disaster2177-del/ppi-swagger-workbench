@@ -1,9 +1,9 @@
 /**
- * App-wide state: the data source (server or browser database), settings
- * (loaded from it) and the colour theme.
+ * App-wide state: the data source (server or browser workspace) and the
+ * shared settings loaded from it.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { DEFAULT_SETTINGS, withDefaults } from '@workbench/shared/settings';
+import { withDefaults } from '@workbench/shared/settings';
 import { resolveDataSource } from '../services/dataSource.js';
 import { toUserError } from '../services/errors.js';
 
@@ -50,23 +50,8 @@ export function AppStateProvider({ children }) {
     [source],
   );
 
-  // Theme: "system" leaves the attribute alone so the OS (or the host page) decides.
-  useEffect(() => {
-    const root = document.documentElement;
-    const theme = settings.defaults?.theme ?? 'system';
-    if (theme === 'system') {
-      if (root.dataset.appTheme) {
-        delete root.dataset.theme;
-        delete root.dataset.appTheme;
-      }
-    } else {
-      root.dataset.theme = theme;
-      root.dataset.appTheme = theme;
-    }
-  }, [settings.defaults?.theme]);
-
   const value = useMemo(
-    () => ({ source, settings, settingsStatus, settingsError, saveSettings, reloadSettings, defaults: DEFAULT_SETTINGS }),
+    () => ({ source, settings, settingsStatus, settingsError, saveSettings, reloadSettings }),
     [source, settings, settingsStatus, settingsError, saveSettings, reloadSettings],
   );
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

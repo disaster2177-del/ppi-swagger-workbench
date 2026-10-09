@@ -9,6 +9,7 @@
  *  - Settings → "Send requests from: The server" routes Try it out through
  *    POST /api/workbench/execute (no CORS limits) and shows the real response
  *  - no internet access: the online validator badge is switched off
+ *  - dark: Swagger UI's own dark mode (html.dark-mode, set in main.jsx)
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { applyAuth, joinUrl } from '@workbench/shared/openapi';
@@ -19,7 +20,7 @@ const EXECUTE_PATH = '/api/workbench/execute';
 const PROXY_MARK = 'x-workbench-proxied-url';
 
 /** Copy of the definition whose servers reflect Settings (Base URL + Base Path). */
-export function specWithSettings(definition, settings) {
+function specWithSettings(definition, settings) {
   const spec = JSON.parse(JSON.stringify(definition));
   const env = activeEnvironment(settings);
   const baseUrl = env?.baseUrl?.trim();
@@ -83,7 +84,10 @@ export default function SwaggerView({ wb, settings }) {
           spec,
           deepLinking: false,
           docExpansion: 'list',
-          defaultModelsExpandDepth: 0,
+          // Schemas section open, each schema listed collapsed (click to expand, or "Expand all").
+          defaultModelsExpandDepth: 1,
+          defaultModelExpandDepth: 1,
+          defaultModelRendering: 'model',
           displayRequestDuration: true,
           filter: true,
           tryItOutEnabled: true,

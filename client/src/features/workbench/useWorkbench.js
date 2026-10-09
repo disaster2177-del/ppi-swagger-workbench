@@ -53,17 +53,14 @@ export default function useWorkbench({ source, settings, settingsReady, toast })
     loadProjects();
   }, [loadProjects]);
 
-  // On load: reopen the last selection in this browser, else the default project chosen in Settings.
+  // On load: reopen the last selection in this browser.
   useEffect(() => {
     if (appliedDefault.current || projectsStatus !== 'ready') return;
     appliedDefault.current = true;
     const last = readPref('selection', null);
-    const fallback = readPref('defaultProjectId', '');
     if (last?.projectId && projects.some((p) => p.id === last.projectId)) {
       pendingRestore.current = last;
       setProjectId(last.projectId);
-    } else if (fallback && projects.some((p) => p.id === fallback)) {
-      setProjectId(fallback);
     }
   }, [projectsStatus, projects]);
 

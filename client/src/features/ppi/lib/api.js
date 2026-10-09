@@ -2,7 +2,7 @@
  * Data access for the UI. Talks to the Express API / Socket.IO server, or to
  * the in-browser demo engine when built with VITE_DEMO=true.
  */
-export const DEMO = import.meta.env.VITE_DEMO === 'true';
+const DEMO = import.meta.env.VITE_DEMO === 'true';
 
 let demoEngine = null;
 async function demo() {

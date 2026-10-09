@@ -8,7 +8,7 @@
  */
 import { aisName, aisPosition, hdt, rmc, ttm } from './nmea.js';
 
-export const DEFAULT_TOPICS = {
+const DEFAULT_TOPICS = {
   nmea: 'radar.nmea',
   ais: 'ais.nmea',
   zones: 'c2.zones',
