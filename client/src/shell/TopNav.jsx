@@ -1,6 +1,6 @@
 import { Badge, Icon, IconButton } from '../ui/index.jsx';
 
-export const VIEW_MODES = [
+const VIEW_MODES = [
   { id: 'ppi', label: 'PPI Only', icon: 'radar' },
   { id: 'split', label: 'Side by Side', icon: 'split' },
   { id: 'swagger', label: 'Swagger Only', icon: 'api' },

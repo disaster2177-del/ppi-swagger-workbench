@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ToastProvider, useToast } from './ui/index.jsx';
 import { AppStateProvider, useAppState } from './state/AppState.jsx';
 import { usePref } from './state/prefs.js';
-import TopNav, { VIEW_MODES } from './shell/TopNav.jsx';
+import TopNav from './shell/TopNav.jsx';
 import Sidebar from './shell/Sidebar.jsx';
 import SplitView from './shell/SplitView.jsx';
 import usePpiController from './features/ppi/usePpiController.js';
@@ -45,12 +45,11 @@ function Shell() {
   const { source, settings, settingsStatus } = useAppState();
   const narrow = useMediaQuery('(max-width: 1100px)');
 
-  // Side by Side on first visit, then the last view used in this browser.
-  const [savedView, setMode] = usePref('viewMode', 'split');
-  const view = VIEW_MODES.some((m) => m.id === savedView) ? savedView : 'split';
+  // Every load opens the same screen: Side by Side, both sidebars closed.
+  const [view, setMode] = useState('split');
   const [page, setPage] = useState('workspace');
-  const [wideLeft, setWideLeft] = usePref('leftOpen', true);
-  const [wideRight, setWideRight] = usePref('rightOpen', false);
+  const [wideLeft, setWideLeft] = useState(false);
+  const [wideRight, setWideRight] = useState(false);
   const [narrowLeft, setNarrowLeft] = useState(false);
   const [narrowRight, setNarrowRight] = useState(false);
   const [ratio, setRatio] = usePref('splitRatio', 50);

@@ -21,7 +21,7 @@ Both share one shell, one dark theme, one set of components and one Express serv
 
 ## What you can do
 
-**View modes.** *PPI Only*, *Side by Side* (with a draggable divider) and *Swagger Only*, plus *Settings*. The app opens in *Side by Side* the first time, then in the last view used in that browser. The left sidebar (scope controls, projects) and the right sidebar (PPI objects, details, rejected messages, API activity) each have their own toggle. A closed sidebar is removed and the main area expands. Below 1100 px the sidebars open over the content; below 900 px the panes stack.
+**View modes.** *PPI Only*, *Side by Side* (with a draggable divider) and *Swagger Only*, plus *Settings*. The app always opens in *Side by Side* with both sidebars closed. The left sidebar (scope controls, projects) and the right sidebar (PPI objects, details, rejected messages, API activity) each have their own toggle. A closed sidebar is removed and the main area expands. Below 1100 px the sidebars open over the content; below 900 px the panes stack.
 
 **Projects → YAML files → APIs → form.**
 
