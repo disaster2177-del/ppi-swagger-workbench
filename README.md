@@ -58,7 +58,7 @@ The form covers path, query, header and cookie parameters and the request body, 
 
 **Notifications.** Success, warning and error toasts use plain messages, for example "YAML uploaded successfully.", "Invalid YAML format. Unable to parse the uploaded file.", "Invalid OpenAPI/Swagger definition.", "Please select a project before uploading YAML files.", "Please enter all required fields." and "API request failed.". Technical detail is available behind *Technical details* and is never the headline.
 
-**Settings** (shared by everyone using the server, stored in MongoDB):
+**Settings** (shared by everyone using the server, stored in MongoDB, or in a JSON file on the server when it runs without MongoDB):
 
 - **Connection**: environments, each with a Base URL and Base Path; one is active. A live example URL is shown.
 - **Requests**: timeout, default headers, and whether to send requests through the server.
@@ -112,6 +112,8 @@ client/src/
                               proxy on the VM), browserBackend.js (browser-only build)
 samples/openapi/              example YAML files (valid and invalid) + projects.json ("Load example projects")
 docs/DEPLOY.md                running on a VM with Docker, storage, proxies, troubleshooting
+docs/RUN-WITHOUT-DOCKER.md     Node.js only (no Docker): offline bundle, systemd service, optional MongoDB / Kafka
+scripts/standalone/           make-bundle.sh, install.sh, systemd unit and settings template for running without Docker
 ```
 
 ## REST API (workbench)
@@ -129,7 +131,9 @@ The PPI endpoints (`/api/geometries`, `/api/ingest`, …) are unchanged; see [do
 
 ## Run it
 
-**Offline / air-gapped RHEL server:** see [docs/OFFLINE-RHEL.md](docs/OFFLINE-RHEL.md). Build one bundle on a machine with internet (`./scripts/offline/make-bundle.sh`), copy it over, run `./install.sh`. The app has no runtime internet dependencies (no CDNs, no web fonts).
+**Without Docker (Node.js only):** see **[docs/RUN-WITHOUT-DOCKER.md](docs/RUN-WITHOUT-DOCKER.md)**. MongoDB and Kafka are optional: with `MONGO_URI=` (empty) Settings are kept in a JSON file, and `PPI_SIMULATOR=true` feeds the PPI from a built-in demo scenario. For an offline RHEL server, `./scripts/standalone/make-bundle.sh` builds one archive with Node.js, the app and an installer (`sudo ./install.sh` sets up a systemd service).
+
+**Offline / air-gapped RHEL server with Docker:** see [docs/OFFLINE-RHEL.md](docs/OFFLINE-RHEL.md). Build one bundle on a machine with internet (`./scripts/offline/make-bundle.sh`), copy it over, run `./install.sh`. The app has no runtime internet dependencies (no CDNs, no web fonts).
 
 **On a VM (Docker):** see [docs/DEPLOY.md](docs/DEPLOY.md). In short: `cp .env.example .env`, set `SETTINGS_SECRET_KEY`, then `docker compose up -d --build` and open `http://<vm-address>:4000`.
 
@@ -138,7 +142,7 @@ The PPI endpoints (`/api/geometries`, `/api/ingest`, …) are unchanged; see [do
 ```bash
 npm install                     # installs shared, server and client (npm workspaces)
 cp server/.env.example server/.env   # set SETTINGS_SECRET_KEY to a long random string
-npm run infra                   # Kafka + MongoDB containers
+npm run infra                   # Kafka + MongoDB containers (or, without Docker: MONGO_URI= and PPI_SIMULATOR=true in server/.env)
 npm run dev                     # API on :4000, UI on http://localhost:5173
 npm run simulate                # optional: live PPI demo traffic
 ```

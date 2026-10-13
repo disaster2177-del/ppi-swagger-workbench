@@ -5,6 +5,7 @@ const STATE_CLASS = {
   error: 'bad',
   disabled: 'pending',
   demo: 'ok',
+  simulated: 'ok',
 };
 
 export default function StatusBar({ connection, status, objectCount, now }) {

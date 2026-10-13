@@ -9,6 +9,7 @@ import { Persistence } from './services/persistence.js';
 import { IngestPipeline } from './services/ingest.js';
 import { GeometryConsumer } from './kafka/consumer.js';
 import { createWorkbench } from './workbench/index.js';
+import { startSimulatorFeed } from './services/simulatorFeed.js';
 
 async function main() {
   const store = new GeometryStore(config.picture);
@@ -16,27 +17,42 @@ async function main() {
   const pipeline = new IngestPipeline({ store, persistence });
   const consumer = new GeometryConsumer(pipeline);
 
-  try {
-    await connectMongo();
-    const saved = await persistence.loadLivePicture();
-    store.hydrate(saved);
-    logger.info(`Restored ${store.size} objects from MongoDB`);
-  } catch (err) {
-    logger.error(`MongoDB unavailable (${err.message}) - running with in-memory picture only; projects and YAML files need MongoDB`);
+  if (config.mongo.enabled) {
+    try {
+      await connectMongo();
+      const saved = await persistence.loadLivePicture();
+      store.hydrate(saved);
+      logger.info(`Restored ${store.size} objects from MongoDB`);
+    } catch (err) {
+      logger.error(
+        `MongoDB unavailable (${err.message}) - PPI picture kept in memory only and Settings cannot be saved. ` +
+          'To run without MongoDB, set MONGO_URI= (empty) in .env.',
+      );
+    }
+  } else {
+    logger.info('MongoDB not used (MONGO_URI is empty): PPI picture kept in memory, no PPI history');
   }
 
   const workbench = createWorkbench();
+  logger.info(`Settings stored in ${workbench.settingsStore}`);
   const app = createApp({ store, pipeline, persistence, consumer, workbench });
   const server = http.createServer(app);
   const sockets = createSocketServer(server, { store, pipeline, consumer });
 
-  server.listen(config.port, () => logger.info(`API + WebSocket listening on :${config.port}`));
+  server.listen(config.port, config.host, () => logger.info(`API + WebSocket listening on ${config.host ?? '*'}:${config.port}`));
 
-  // Do not block startup on Kafka - it reconnects in the background.
-  consumer.start().catch((err) => logger.error('Kafka consumer stopped:', err));
+  let simulator = null;
+  if (config.simulator.enabled) {
+    simulator = startSimulatorFeed(pipeline, { rate: config.simulator.rate });
+    consumer.markSimulated(simulator.topics);
+  } else {
+    // Do not block startup on Kafka - it reconnects in the background.
+    consumer.start().catch((err) => logger.error('Kafka consumer stopped:', err));
+  }
 
   const shutdown = async (signal) => {
     logger.info(`${signal} received, shutting down`);
+    simulator?.stop();
     await consumer.stop();
     sockets.close();
     server.close(() => process.exit(0));

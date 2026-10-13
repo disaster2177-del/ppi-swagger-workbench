@@ -9,6 +9,7 @@ import { AppSettings } from './models.js';
  */
 export function createMongoSettingsRepo() {
   return {
+    describe: () => 'MongoDB (app_settings)',
     async load() {
       if (!isMongoConnected()) return { data: {}, secrets: {} };
       const doc = await AppSettings.findById('app').lean();

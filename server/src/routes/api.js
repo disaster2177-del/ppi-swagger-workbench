@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { KINDS, IDENTITIES } from '../services/normalizer.js';
 import { getAdapter, listAdapters } from '../kafka/adapters/index.js';
 import { isMongoConnected } from '../db.js';
+import config from '../config.js';
 
 export default function createApiRouter({ store, pipeline, persistence, consumer }) {
   const router = Router();
@@ -10,7 +11,7 @@ export default function createApiRouter({ store, pipeline, persistence, consumer
     res.json({
       status: 'ok',
       uptimeSec: Math.round(process.uptime()),
-      mongo: isMongoConnected() ? 'connected' : 'disconnected',
+      mongo: !config.mongo.enabled ? 'not used' : isMongoConnected() ? 'connected' : 'disconnected',
       kafka: consumer.status,
       objects: store.size,
     });
@@ -43,6 +44,7 @@ export default function createApiRouter({ store, pipeline, persistence, consumer
   // Stored message history for one object: ?from=<ms>&to=<ms>&limit=500
   router.get('/geometries/:id/history', async (req, res, next) => {
     try {
+      if (!config.mongo.enabled) return res.status(503).json({ error: 'History is not kept: this server runs without MongoDB' });
       if (!isMongoConnected()) return res.status(503).json({ error: 'MongoDB not connected' });
       res.json(await persistence.history(req.params.id, req.query));
     } catch (err) {

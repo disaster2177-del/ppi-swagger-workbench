@@ -1,16 +1,17 @@
 /**
  * AES-256-GCM encryption for credentials kept in Settings (bearer token,
  * password, API key). The key comes from SETTINGS_SECRET_KEY; without it a
- * random key is created once in server/.data/settings.key (keep that file out
- * of version control and backups you share).
+ * random key is created once in DATA_DIR/settings.key (default
+ * server/.data/settings.key; keep that file out of version control and
+ * backups you share).
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import config from '../config.js';
 import logger from '../logger.js';
 
-const KEY_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.data/settings.key');
+const KEY_FILE = path.join(config.dataDir, 'settings.key');
 let cachedKey = null;
 
 function loadKey() {

@@ -20,6 +20,12 @@ export class GeometryConsumer extends EventEmitter {
     this.consumer = null;
   }
 
+  /** Used when the built-in simulator feeds the pipeline instead of Kafka. */
+  markSimulated(topics) {
+    this.status = { ...this.status, brokers: ['built-in simulator'], topics };
+    this.#setStatus('simulated');
+  }
+
   async start() {
     if (!config.kafka.enabled) {
       this.#setStatus('disabled');

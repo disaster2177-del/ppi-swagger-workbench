@@ -1,5 +1,7 @@
 # Offline installation on RHEL
 
+> Prefer not to use Docker at all? See [RUN-WITHOUT-DOCKER.md](RUN-WITHOUT-DOCKER.md): one archive with Node.js and the app, installed as a systemd service.
+
 This guide installs PPI & Swagger Workbench on a **RHEL 8 or 9 server with no internet access** (air-gapped), using Docker.
 
 You need two machines:

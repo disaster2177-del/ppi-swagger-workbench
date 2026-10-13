@@ -1,0 +1,28 @@
+# systemd unit for PPI & Swagger Workbench without Docker.
+# install.sh copies this to /etc/systemd/system/ppi-workbench.service.
+[Unit]
+Description=PPI & Swagger Workbench
+After=network-online.target
+Wants=network-online.target
+# Start after MongoDB / Kafka when they run on this machine (harmless if they don't exist).
+After=mongod.service kafka.service
+
+[Service]
+Type=simple
+User=ppiwb
+Group=ppiwb
+WorkingDirectory=/opt/ppi-workbench/app/server
+EnvironmentFile=/etc/ppi-workbench/ppi-workbench.env
+Environment=NODE_ENV=production
+ExecStart=/opt/ppi-workbench/node/bin/node src/index.js
+Restart=on-failure
+RestartSec=5
+# Hardening: the app only writes to its data folder.
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/ppi-workbench
+
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const bool = (v, def = false) => (v === undefined || v === '' ? def : /^(1|true|yes)$/i.test(v));
 const num = (v, def) => (v === undefined || v === '' || Number.isNaN(Number(v)) ? def : Number(v));
@@ -23,12 +25,22 @@ function parseTopics(value) {
   });
 }
 
+// MONGO_URI not set at all -> local MongoDB (Docker / development default).
+// MONGO_URI set but empty, or "none" -> run without MongoDB (settings in DATA_DIR/settings.json).
+const mongoUri = process.env.MONGO_URI === undefined ? 'mongodb://localhost:27017/naval_geometry' : process.env.MONGO_URI.trim();
+const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
 const config = {
   port: num(process.env.PORT, 4000),
+  // Interface to listen on: empty = all interfaces; 127.0.0.1 = this machine only (behind nginx, say).
+  host: process.env.HOST || undefined,
   corsOrigin: list(process.env.CORS_ORIGIN, ['http://localhost:5173']),
+  // Where the server keeps its own files (settings.json without MongoDB, settings.key).
+  dataDir: path.resolve(serverDir, process.env.DATA_DIR || '.data'),
 
   mongo: {
-    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/naval_geometry',
+    enabled: !!mongoUri && mongoUri.toLowerCase() !== 'none',
+    uri: mongoUri,
     persistHistory: bool(process.env.PERSIST_HISTORY, true),
     historyTtlHours: num(process.env.HISTORY_TTL_HOURS, 24),
   },
@@ -48,6 +60,12 @@ const config = {
           password: process.env.KAFKA_SASL_PASSWORD,
         }
       : undefined,
+  },
+
+  // Built-in PPI feed: the demo naval scenario, fed straight into the pipeline (no Kafka needed).
+  simulator: {
+    enabled: bool(process.env.PPI_SIMULATOR, false),
+    rate: Math.min(10, Math.max(0.2, num(process.env.PPI_SIMULATOR_RATE, 1))),
   },
 
   picture: {
