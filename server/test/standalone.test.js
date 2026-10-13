@@ -73,3 +73,22 @@ test('the built-in simulator fills the PPI picture without Kafka', () => {
     clearInterval(pipeline.rateTimer);
   }
 });
+
+test('startup summary names the settings file, MongoDB and the PPI feed', async () => {
+  const { describeConfiguration } = await import('../src/configSummary.js');
+  const text = describeConfiguration(config).join('\n');
+  assert.match(text, /^Configuration: /);
+  assert.match(text, /MongoDB: {2}not used/);
+  assert.match(text, /PPI feed: built-in simulator/);
+  assert.match(text, /Set in the environment .*MONGO_URI, PPI_SIMULATOR/);
+
+  const withMongo = describeConfiguration({
+    ...config,
+    envSource: { file: '/x/server/.env', loaded: true, fromEnvironment: [] },
+    mongo: { ...config.mongo, enabled: true, uri: 'mongodb://admin:secret@db:27017/x' },
+    simulator: { ...config.simulator, enabled: false },
+  }).join('\n');
+  assert.match(withMongo, /mongodb:\/\/admin:\*\*\*@db:27017\/x/);
+  assert.doesNotMatch(withMongo, /secret/);
+  assert.match(withMongo, /PPI feed: Kafka at/);
+});

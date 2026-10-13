@@ -1,6 +1,19 @@
-import 'dotenv/config';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
+
+const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// Settings file, whichever folder the server is started from:
+//   ENV_FILE=/path/to/file, else server/.env, else the .env in the project root (the one next to docker-compose.yml).
+// Variables already set in the environment (shell export, systemd EnvironmentFile, Docker) win over the file.
+const KEY_VARS = ['MONGO_URI', 'PPI_SIMULATOR', 'KAFKA_ENABLED', 'KAFKA_BROKERS'];
+const fromEnvironment = KEY_VARS.filter((k) => process.env[k] !== undefined);
+const candidates = process.env.ENV_FILE ? [path.resolve(process.env.ENV_FILE)] : [path.join(serverDir, '.env'), path.join(serverDir, '..', '.env')];
+const envFile = candidates.find((f) => fs.existsSync(f)) ?? candidates[0];
+const envFileLoaded = fs.existsSync(envFile);
+if (envFileLoaded) dotenv.config({ path: envFile, quiet: true });
 
 const bool = (v, def = false) => (v === undefined || v === '' ? def : /^(1|true|yes)$/i.test(v));
 const num = (v, def) => (v === undefined || v === '' || Number.isNaN(Number(v)) ? def : Number(v));
@@ -28,9 +41,10 @@ function parseTopics(value) {
 // MONGO_URI not set at all -> local MongoDB (Docker / development default).
 // MONGO_URI set but empty, or "none" -> run without MongoDB (settings in DATA_DIR/settings.json).
 const mongoUri = process.env.MONGO_URI === undefined ? 'mongodb://localhost:27017/naval_geometry' : process.env.MONGO_URI.trim();
-const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const config = {
+  // Where the settings came from (printed at startup).
+  envSource: { file: envFile, loaded: envFileLoaded, fromEnvironment },
   port: num(process.env.PORT, 4000),
   // Interface to listen on: empty = all interfaces; 127.0.0.1 = this machine only (behind nginx, say).
   host: process.env.HOST || undefined,

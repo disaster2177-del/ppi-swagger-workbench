@@ -145,6 +145,14 @@ The template is already set up for running without MongoDB and Kafka (`MONGO_URI
 SETTINGS_SECRET_KEY=<a long random string, e.g. output of: openssl rand -base64 32>
 ```
 
+> **Which file is read?** `server/.env`. If there is none, the `.env` in the project root (the Docker one) is used. The first lines of the server log name the file and say whether MongoDB and Kafka or the simulator are used:
+> ```
+> INFO  Configuration: /home/you/ppi-swagger-workbench/server/.env
+> INFO    MongoDB:  not used (MONGO_URI is empty) - Settings saved in a file
+> INFO    PPI feed: built-in simulator (PPI_SIMULATOR=true) - Kafka not used
+> ```
+> Values exported in the shell (`export MONGO_URI=…`) win over the file.
+
 > **Created `server/.env` before?** An older copy may still say `MONGO_URI=mongodb://localhost:27017/…` and `PPI_SIMULATOR=false`. Then the server keeps trying Kafka on `localhost:9092` (`ECONNREFUSED` in the log) and can't save Settings. Change those two lines to `MONGO_URI=` and `PPI_SIMULATOR=true`, or copy the template again.
 
 ### 4. Build the UI once, then start

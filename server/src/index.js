@@ -1,5 +1,6 @@
 import http from 'node:http';
 import config from './config.js';
+import { describeConfiguration } from './configSummary.js';
 import logger from './logger.js';
 import { connectMongo } from './db.js';
 import { createApp } from './app.js';
@@ -12,6 +13,7 @@ import { createWorkbench } from './workbench/index.js';
 import { startSimulatorFeed } from './services/simulatorFeed.js';
 
 async function main() {
+  for (const line of describeConfiguration(config)) logger.info(line);
   const store = new GeometryStore(config.picture);
   const persistence = new Persistence(store);
   const pipeline = new IngestPipeline({ store, persistence });
