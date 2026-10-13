@@ -19,6 +19,7 @@ COPY server/ server/
 COPY client/ client/
 # The client bundles the example YAML files ("Load example projects" in browser-only builds).
 COPY samples/ samples/
+COPY scripts/check-install.mjs scripts/
 RUN npm run build
 
 # ---- API server (also serves the built client)

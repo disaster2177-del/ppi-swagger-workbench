@@ -248,5 +248,6 @@ cd /opt/ppi-workbench/app/server && sudo -u ppiwb /opt/ppi-workbench/node/bin/no
 | "Settings cannot be saved because the database is not connected" | `MONGO_URI` is set but MongoDB is down: start `mongod`, or empty `MONGO_URI` |
 | Log says `MongoDB unavailable` at start | same as above; the app still runs, Settings just can't be saved |
 | Saved API credentials stopped working | `SETTINGS_SECRET_KEY` changed: enter the credentials again in Settings |
+| `npm run build`: *failed to resolve import "swagger-ui-dist/…"* (or "Missing npm package: …") | `node_modules` is older than the code (a package was added). Run `npm install` once, then build again. This does not change your npm or Node version |
 | `GLIBC_2.28 not found` when Node starts | the server is RHEL 7: Node.js 22 needs RHEL 8 or newer |
 | Service fails with `status=203/EXEC` | SELinux label or wrong path: `sudo restorecon -R /opt/ppi-workbench`, check `ExecStart` |

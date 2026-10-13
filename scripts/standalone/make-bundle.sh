@@ -48,6 +48,7 @@ cp -r shared samples "${OUT}/app/"
 mkdir -p "${OUT}/app/server"
 cp -r server/src server/scripts server/package.json "${OUT}/app/server/"
 cp server/.env.example "${OUT}/app/server/"
+mkdir -p "${OUT}/app/scripts" && cp scripts/check-install.mjs "${OUT}/app/scripts/"
 rm -rf "${OUT}/app/shared/node_modules" "${OUT}/app/shared/test"
 
 echo "==> 3/5 Installing runtime packages only (no build tools)"
