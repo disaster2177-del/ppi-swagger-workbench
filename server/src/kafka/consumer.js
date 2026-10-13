@@ -4,6 +4,16 @@ import config from '../config.js';
 import logger from '../logger.js';
 import { getAdapter, TEXT_ADAPTERS } from './adapters/index.js';
 
+const CONNECTION_NOISE = /ECONNREFUSED|ENOTFOUND|EHOSTUNREACH|ETIMEDOUT|EAI_AGAIN|Connection (error|timeout)|Failed to connect to seed broker|Connection closed/i;
+
+/** kafkajs logs every failed connection attempt; keep those for DEBUG=1 and let the retry loop report once. */
+const kafkaLogCreator = () => ({ level, log }) => {
+  const text = `kafkajs: ${log.message}`;
+  if (level <= logLevel.ERROR && !CONNECTION_NOISE.test(log.message)) logger.error(text);
+  else if (level === logLevel.WARN && !CONNECTION_NOISE.test(log.message)) logger.warn(text);
+  else logger.debug(text);
+};
+
 /**
  * Subscribes to the configured topics and feeds every message into the ingest
  * pipeline. Reconnects automatically with back-off if the brokers are down.
@@ -39,6 +49,7 @@ export class GeometryConsumer extends EventEmitter {
       ssl: config.kafka.ssl,
       sasl: config.kafka.sasl,
       logLevel: logLevel.WARN,
+      logCreator: kafkaLogCreator,
       retry: { retries: 5 },
     });
 
@@ -75,13 +86,21 @@ export class GeometryConsumer extends EventEmitter {
           await this.consumer.subscribe({ topic, fromBeginning: config.kafka.fromBeginning });
         }
         await this.consumer.run({ eachMessage: (payload) => this.#handle(payload) });
-        logger.info(`Kafka consumer running on [${[...this.topicAdapters.keys()].join(', ')}]`);
+        logger.info(`Kafka consumer running on [${[...this.topicAdapters.keys()].join(', ')}]${attempt ? ` (connected after ${attempt} failed attempts)` : ''}`);
         return;
       } catch (err) {
         attempt += 1;
         const delay = Math.min(30_000, 1000 * 2 ** Math.min(attempt, 5));
         this.#setStatus('error', err.message);
-        logger.error(`Kafka connection failed (${err.message}); retrying in ${delay / 1000}s`);
+        // Say it clearly once, then only every 20th attempt (about every 10 minutes); the rest with DEBUG=1.
+        if (attempt === 1 || attempt % 20 === 0) {
+          logger.warn(
+            `Kafka is not reachable at ${config.kafka.brokers.join(', ')} (${err.message}). Retrying in the background; the PPI stays empty until it connects.\n` +
+              '    No Kafka on this machine? In server/.env set PPI_SIMULATOR=true (built-in demo feed) or KAFKA_ENABLED=false, then restart.',
+          );
+        } else {
+          logger.debug(`Kafka connection failed (${err.message}); retrying in ${delay / 1000}s`);
+        }
         await this.consumer?.disconnect().catch(() => {});
         await new Promise((r) => setTimeout(r, delay));
       }

@@ -39,7 +39,10 @@ async function main() {
   const server = http.createServer(app);
   const sockets = createSocketServer(server, { store, pipeline, consumer });
 
-  server.listen(config.port, config.host, () => logger.info(`API + WebSocket listening on ${config.host ?? '*'}:${config.port}`));
+  server.listen(config.port, config.host, () => {
+    logger.info(`API + WebSocket listening on ${config.host ?? '*'}:${config.port}`);
+    logger.info(`Open http://${config.host && config.host !== '0.0.0.0' ? config.host : 'localhost'}:${config.port} (or http://<this-machine's-IP>:${config.port} from other PCs)`);
+  });
 
   let simulator = null;
   if (config.simulator.enabled) {

@@ -137,15 +137,16 @@ The PPI endpoints (`/api/geometries`, `/api/ingest`, …) are unchanged; see [do
 
 **On a VM (Docker):** see [docs/DEPLOY.md](docs/DEPLOY.md). In short: `cp .env.example .env`, set `SETTINGS_SECRET_KEY`, then `docker compose up -d --build` and open `http://<vm-address>:4000`.
 
-**For development** (Node 20+, Docker for Kafka and MongoDB):
+**For development** (Node 20+; Docker not needed):
 
 ```bash
 npm install                     # installs shared, server and client (npm workspaces)
-cp server/.env.example server/.env   # set SETTINGS_SECRET_KEY to a long random string
-npm run infra                   # Kafka + MongoDB containers (or, without Docker: MONGO_URI= and PPI_SIMULATOR=true in server/.env)
-npm run dev                     # API on :4000, UI on http://localhost:5173
-npm run simulate                # optional: live PPI demo traffic
+cp server/.env.example server/.env   # runs without MongoDB/Kafka (MONGO_URI= , PPI_SIMULATOR=true); set SETTINGS_SECRET_KEY
+npm run dev                     # API on :4000, UI with hot reload on http://localhost:5173
+# Production: npm run build once (again only after client code changes), then npm start on :4000
 ```
+
+With Kafka and MongoDB from Docker instead: `npm run infra`, then in `server/.env` set `MONGO_URI=mongodb://localhost:27017/naval_geometry` and `PPI_SIMULATOR=false`, and `npm run simulate` for demo traffic through Kafka.
 
 If your network needs a proxy to reach the APIs you execute, start the server with `HTTPS_PROXY=… NODE_USE_ENV_PROXY=1`.
 

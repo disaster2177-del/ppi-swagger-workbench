@@ -20,13 +20,22 @@ export function createApp(deps) {
   if (deps.workbench) app.use('/api/workbench', deps.workbench.router);
   app.use('/api', createApiRouter(deps));
 
-  // Serve the built React app in production (client/dist).
+  // Serve the built React app (client/dist, made by "npm run build"; only needed again after the client code changes).
   const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
-  if (fs.existsSync(clientDist)) {
+  if (fs.existsSync(path.join(clientDist, 'index.html'))) {
     app.use(express.static(clientDist));
     app.use((req, res, next) => {
       if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
       res.sendFile(path.join(clientDist, 'index.html'));
+    });
+  } else {
+    logger.warn(`The web UI is not built (${clientDist} is missing). Run "npm run build" once, then restart. The API works without it.`);
+    app.use((req, res, next) => {
+      if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/socket.io')) return next();
+      res
+        .status(503)
+        .type('text/plain')
+        .send('The web UI is not built yet.\n\nIn the project folder run:\n\n    npm run build\n\nthen restart the server (npm start).\nDuring development use "npm run dev" and open http://localhost:5173 instead.\n');
     });
   }
 

@@ -139,21 +139,24 @@ npm install
 cp server/.env.example server/.env
 ```
 
-Edit `server/.env`. For the simplest setup (no MongoDB, no Kafka):
+The template is already set up for running without MongoDB and Kafka (`MONGO_URI=` empty, `PPI_SIMULATOR=true`). Only add a secret key in `server/.env`:
 
 ```ini
-MONGO_URI=
-PPI_SIMULATOR=true
 SETTINGS_SECRET_KEY=<a long random string, e.g. output of: openssl rand -base64 32>
-NODE_USE_ENV_PROXY=1
 ```
 
-### 4. Build the UI and start
+> **Created `server/.env` before?** An older copy may still say `MONGO_URI=mongodb://localhost:27017/…` and `PPI_SIMULATOR=false`. Then the server keeps trying Kafka on `localhost:9092` (`ECONNREFUSED` in the log) and can't save Settings. Change those two lines to `MONGO_URI=` and `PPI_SIMULATOR=true`, or copy the template again.
+
+### 4. Build the UI once, then start
 
 ```bash
 npm run build      # builds the web UI into client/dist
 npm start          # server on http://<this-machine>:4000 (serves the UI too)
 ```
+
+**`npm run build` is not needed every time.** It turns the React source in `client/src` into plain files in `client/dist`, which the server then serves. Run it again only when the client code changed, for example after `git pull`. To restart the app, `npm start` alone is enough. If `client/dist` is missing, the server says so in its log and in the browser.
+
+While you are changing the code yourself, use `npm run dev` instead (see below). It rebuilds automatically on every save.
 
 Stop with Ctrl+C. To keep it running after logout and start it on boot, use the systemd service in `scripts/standalone/ppi-workbench.service`. Change `WorkingDirectory`, `ExecStart` (path to `node`) and `EnvironmentFile` (path to your `server/.env`) to your folders, then:
 
@@ -167,8 +170,8 @@ Or run `./scripts/standalone/make-bundle.sh` and then `sudo ./install.sh` from t
 ### Development (hot reload)
 
 ```bash
-# server/.env: MONGO_URI=  and  PPI_SIMULATOR=true   (skip "npm run infra", that one uses Docker)
-npm run dev        # API on :4000, UI with hot reload on http://localhost:5173
+# server/.env from the template (MONGO_URI= and PPI_SIMULATOR=true). Skip "npm run infra", that one uses Docker.
+npm run dev        # API on :4000, UI with hot reload on http://localhost:5173 (no "npm run build" needed)
 ```
 
 ---
@@ -242,7 +245,8 @@ cd /opt/ppi-workbench/app/server && sudo -u ppiwb /opt/ppi-workbench/node/bin/no
 |---|---|
 | Browser can't open `http://server:4000` | `systemctl status ppi-workbench`; firewall: `sudo firewall-cmd --list-ports` (re-run `install.sh` or add the port); `HOST` must be empty, not `127.0.0.1` |
 | `EADDRINUSE` in the log | another program uses the port: change `PORT` |
-| PPI empty, status `KAFKA CONNECTING` | Kafka not reachable: start Kafka or set `PPI_SIMULATOR=true` |
+| PPI empty, status `KAFKA CONNECTING` / `KAFKA ERROR`; log says *Kafka is not reachable at localhost:9092 (… ECONNREFUSED …)* | no Kafka running there. Set `PPI_SIMULATOR=true` (demo feed) or `KAFKA_ENABLED=false` in `server/.env` (or `/etc/ppi-workbench/ppi-workbench.env`), then restart. Use `DEBUG=1` to see every retry |
+| Browser shows *The web UI is not built yet* | run `npm run build` once, then `npm start` |
 | PPI status `KAFKA DISABLED` | `KAFKA_ENABLED=false` and simulator off: set `PPI_SIMULATOR=true` for the demo feed |
 | "Settings could not be saved to …settings.json" | the service user can't write `DATA_DIR`: `sudo chown ppiwb: /var/lib/ppi-workbench` |
 | "Settings cannot be saved because the database is not connected" | `MONGO_URI` is set but MongoDB is down: start `mongod`, or empty `MONGO_URI` |
