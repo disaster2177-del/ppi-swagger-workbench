@@ -13,7 +13,7 @@ them.
 
 1. Start the stack without the simulator, so it doesn't overwrite what you paste:
    `docker compose up -d kafka mongo`, then `npm run dev`.
-2. Open http://localhost:5173 (dev) or http://localhost:4000 (Docker).
+2. Open http://localhost:4000.
 3. Open a console producer for a topic, paste the lines, and press Ctrl+C to exit:
 
 ```bash

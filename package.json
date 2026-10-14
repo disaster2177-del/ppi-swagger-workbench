@@ -9,16 +9,14 @@
     "client"
   ],
   "scripts": {
-    "dev": "node scripts/check-install.mjs server shared client && concurrently -n server,client -c green,cyan \"npm --workspace server run dev\" \"npm --workspace client run dev\"",
+    "dev": "node scripts/check-install.mjs server shared client && npm --workspace server run dev",
+    "dev:vite": "npm --workspace client run dev",
     "build": "node scripts/check-install.mjs client && npm --workspace client run build",
     "build:demo": "node scripts/check-install.mjs client && npm --workspace client run build:demo",
     "start": "node scripts/check-install.mjs server shared && npm --workspace server start",
     "simulate": "npm --workspace server run simulate",
     "infra": "docker compose up -d kafka mongo",
     "test": "npm --workspace shared test && npm --workspace server test && npm --workspace client test"
-  },
-  "devDependencies": {
-    "concurrently": "^10.0.5"
   },
   "engines": {
     "node": ">=20"

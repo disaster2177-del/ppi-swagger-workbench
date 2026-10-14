@@ -11,6 +11,7 @@ import { IngestPipeline } from './services/ingest.js';
 import { GeometryConsumer } from './kafka/consumer.js';
 import { createWorkbench } from './workbench/index.js';
 import { startSimulatorFeed } from './services/simulatorFeed.js';
+import { createDevUi } from './devUi.js';
 
 async function main() {
   for (const line of describeConfiguration(config)) logger.info(line);
@@ -40,6 +41,7 @@ async function main() {
   const app = createApp({ store, pipeline, persistence, consumer, workbench });
   const server = http.createServer(app);
   const sockets = createSocketServer(server, { store, pipeline, consumer });
+  if (config.devUi) app.locals.vite = await createDevUi(server);
 
   server.listen(config.port, config.host, () => {
     logger.info(`API + WebSocket listening on ${config.host ?? '*'}:${config.port}`);
@@ -58,6 +60,7 @@ async function main() {
   const shutdown = async (signal) => {
     logger.info(`${signal} received, shutting down`);
     simulator?.stop();
+    await app.locals.vite?.close();
     await consumer.stop();
     sockets.close();
     server.close(() => process.exit(0));

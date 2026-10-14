@@ -179,7 +179,6 @@ To update a dependency: edit the file below on the build machine, rebuild the bu
 | @turf/* (8 packages) | ^7.4.0 | `client/package.json` | geodesic PPI engine |
 | swagger-ui-dist | ^5.32.0 | `client/package.json` | the Swagger UI view (online validator switched off, so it works offline) |
 | vite, @vitejs/plugin-react, vite-plugin-singlefile, vitest | ^8.3.1, ^6.1.1, ^2.3.3, ^5.0.3 | `client/package.json` (devDependencies) | build and tests only, not in the running app |
-| concurrently | ^10.0.5 | `package.json` (root, devDependency) | `npm run dev` only |
 
 `^` allows newer minor versions at build time. For identical builds, commit `package-lock.json` (step 0). The Dockerfile then uses `npm ci` with exactly those versions. To upgrade one package on the build machine: `docker run --rm -v "$PWD":/app -w /app node:22-alpine npm install <package>@<version> --workspace <server|client|shared>`, commit, rebuild the bundle.
 

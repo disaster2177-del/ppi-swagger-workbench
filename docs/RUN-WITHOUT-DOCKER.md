@@ -164,7 +164,7 @@ npm start          # server on http://<this-machine>:4000 (serves the UI too)
 
 **`npm run build` is not needed every time.** It turns the React source in `client/src` into plain files in `client/dist`, which the server then serves. Run it again only when the client code changed, for example after `git pull`. To restart the app, `npm start` alone is enough. If `client/dist` is missing, the server says so in its log and in the browser.
 
-While you are changing the code yourself, use `npm run dev` instead (see below). It rebuilds automatically on every save.
+While you are changing the code yourself, use `npm run dev` instead (see below): same port 4000, no build, changes show on save.
 
 Stop with Ctrl+C. To keep it running after logout and start it on boot, use the systemd service in `scripts/standalone/ppi-workbench.service`. Change `WorkingDirectory`, `ExecStart` (path to `node`) and `EnvironmentFile` (path to your `server/.env`) to your folders, then:
 
@@ -179,8 +179,12 @@ Or run `./scripts/standalone/make-bundle.sh` and then `sudo ./install.sh` from t
 
 ```bash
 # server/.env from the template (MONGO_URI= and PPI_SIMULATOR=true). Skip "npm run infra", that one uses Docker.
-npm run dev        # API on :4000, UI with hot reload on http://localhost:5173 (no "npm run build" needed)
+npm run dev        # http://localhost:4000 - UI served live from client/src, no "npm run build" needed
 ```
+
+- **UI code** (`client/src`): the open browser updates as soon as you save.
+- **Server code** (`server/src`, `shared`): the server restarts by itself.
+- **Building:** only for production (`npm run build`, then `npm start`) or the offline bundle.
 
 ---
 

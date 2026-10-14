@@ -20,9 +20,15 @@ export function createApp(deps) {
   if (deps.workbench) app.use('/api/workbench', deps.workbench.router);
   app.use('/api', createApiRouter(deps));
 
-  // Serve the built React app (client/dist, made by "npm run build"; only needed again after the client code changes).
+  // Development (npm run dev): the UI comes live from client/src through Vite, set on app.locals.vite at startup.
+  // Production (npm start): serve the built React app (client/dist, made by "npm run build").
   const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
-  if (fs.existsSync(path.join(clientDist, 'index.html'))) {
+  if (config.devUi) {
+    app.use((req, res, next) => {
+      if (app.locals.vite) return app.locals.vite.middlewares(req, res, next);
+      res.status(503).type('text/plain').send('The live UI is starting, refresh in a moment.\n');
+    });
+  } else if (fs.existsSync(path.join(clientDist, 'index.html'))) {
     app.use(express.static(clientDist));
     app.use((req, res, next) => {
       if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
@@ -35,7 +41,7 @@ export function createApp(deps) {
       res
         .status(503)
         .type('text/plain')
-        .send('The web UI is not built yet.\n\nIn the project folder run:\n\n    npm run build\n\nthen restart the server (npm start).\nDuring development use "npm run dev" and open http://localhost:5173 instead.\n');
+        .send('The web UI is not built yet.\n\nIn the project folder run:\n\n    npm run build\n\nthen restart the server (npm start).\nWhile changing the code, use "npm run dev" instead: the UI is served live, no build needed.\n');
     });
   }
 

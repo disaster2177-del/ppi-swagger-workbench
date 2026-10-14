@@ -46,6 +46,8 @@ const config = {
   // Where the settings came from (printed at startup).
   envSource: { file: envFile, loaded: envFileLoaded, fromEnvironment },
   port: num(process.env.PORT, 4000),
+  // npm run dev: serve the UI live from client/src (Vite) instead of the built client/dist.
+  devUi: process.argv.includes('--dev-ui') || bool(process.env.DEV_UI, false),
   // Interface to listen on: empty = all interfaces; 127.0.0.1 = this machine only (behind nginx, say).
   host: process.env.HOST || undefined,
   corsOrigin: list(process.env.CORS_ORIGIN, ['http://localhost:5173']),

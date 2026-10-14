@@ -21,10 +21,14 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       fs: { allow: ['..'] },
-      proxy: {
-        '/api': API,
-        '/socket.io': { target: API, ws: true },
-      },
+      // Standalone "vite" (npm run dev:vite) proxies to the API. Inside the API server
+      // (npm run dev, VITE_MIDDLEWARE=1) the API is the same server, so no proxy.
+      proxy: process.env.VITE_MIDDLEWARE
+        ? undefined
+        : {
+            '/api': API,
+            '/socket.io': { target: API, ws: true },
+          },
     },
   };
 });

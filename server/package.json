@@ -6,12 +6,13 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "dev": "node --watch src/index.js --dev-ui",
     "simulate": "node scripts/simulator.js",
     "test": "node --test test/*.test.js",
     "samples": "node scripts/publish-samples.js",
     "generate-samples": "node scripts/generate-samples.js",
-    "build": "npm --prefix .. run build"
+    "build": "npm --prefix .. run build",
+    "dev:api": "node --watch src/index.js"
   },
   "engines": {
     "node": ">=20"

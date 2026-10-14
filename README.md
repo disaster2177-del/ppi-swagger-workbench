@@ -142,7 +142,7 @@ The PPI endpoints (`/api/geometries`, `/api/ingest`, …) are unchanged; see [do
 ```bash
 npm install                     # installs shared, server and client (npm workspaces)
 cp server/.env.example server/.env   # runs without MongoDB/Kafka (MONGO_URI= , PPI_SIMULATOR=true); set SETTINGS_SECRET_KEY
-npm run dev                     # API on :4000, UI with hot reload on http://localhost:5173
+npm run dev                     # http://localhost:4000 - UI live from the source: save a file, the browser updates (no build)
 # Production: npm run build once (again only after client code changes), then npm start on :4000
 ```
 

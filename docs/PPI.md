@@ -62,14 +62,13 @@ To see the raw topics as well, add `--profile tools` for Kafka UI at http://loca
 Requirements: Node 18+ and Docker (only for Kafka and MongoDB).
 
 ```bash
-npm install                 # root (concurrently)
-npm run install:all         # server + client deps
-cp server/.env.example server/.env
+npm install                 # all workspaces
+cp server/.env.example server/.env   # then MONGO_URI=mongodb://localhost:27017/naval_geometry, PPI_SIMULATOR=false
 npm run infra               # starts kafka + mongo containers
-npm run dev                 # API on :4000, React (Vite) on :5173
+npm run dev                 # API + live UI on :4000 (no build)
 npm run simulate            # in another terminal: publishes live demo data to Kafka
 # or publish the static sample files once:  npm --prefix server run samples
-# open http://localhost:5173
+# open http://localhost:4000
 ```
 
 Without Kafka, run `node scripts/simulator.js --http` from `server/`. It posts the same demo data
