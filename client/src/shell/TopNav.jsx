@@ -54,14 +54,17 @@ export default function TopNav({ mode, page, onMode, onSettings, leftOpen, right
             </Badge>
           </span>
         )}
-        <IconButton
-          icon="sidebarRight"
-          label={rightOpen ? 'Hide right sidebar' : 'Show right sidebar'}
-          pressed={rightOpen}
-          onClick={onToggleRight}
-          aria-controls="sidebar-right"
-          aria-expanded={rightOpen}
-        />
+        {/* Hidden when the current view has nothing to show in the right sidebar. */}
+        {onToggleRight && (
+          <IconButton
+            icon="sidebarRight"
+            label={rightOpen ? 'Hide right sidebar' : 'Show right sidebar'}
+            pressed={rightOpen}
+            onClick={onToggleRight}
+            aria-controls="sidebar-right"
+            aria-expanded={rightOpen}
+          />
+        )}
       </div>
     </header>
   );

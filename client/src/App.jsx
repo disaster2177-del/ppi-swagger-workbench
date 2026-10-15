@@ -83,7 +83,9 @@ function Shell() {
     // { id: 'activity', label: 'Activity', icon: 'activity' },
   ];
   const lt = leftTabs.some((t) => t.id === leftTab) ? leftTab : leftTabs[0].id;
-  const rt = rightTabs.some((t) => t.id === rightTab) ? rightTab : rightTabs[0].id;
+  // On Swagger Only the right sidebar can have no tabs at all (Activity is commented out above): then it is not shown.
+  const hasRightTabs = rightTabs.length > 0;
+  const rt = rightTabs.some((t) => t.id === rightTab) ? rightTab : rightTabs[0]?.id;
 
   // Switching to Swagger Only brings the API-related sidebar tabs forward.
   const chooseMode = (m) => {
@@ -124,9 +126,9 @@ function Shell() {
         onMode={chooseMode}
         onSettings={openSettings}
         leftOpen={leftOpen}
-        rightOpen={rightOpen}
+        rightOpen={rightOpen && hasRightTabs}
         onToggleLeft={toggleLeft}
-        onToggleRight={toggleRight}
+        onToggleRight={hasRightTabs ? toggleRight : undefined}
         source={source}
       />
       <div className="app-body">
@@ -177,7 +179,7 @@ function Shell() {
           id="sidebar-right"
           side="right"
           title="Right sidebar"
-          open={rightOpen}
+          open={rightOpen && hasRightTabs}
           overlay={narrow}
           tabs={rightTabs}
           tab={rt}
