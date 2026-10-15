@@ -1,14 +1,14 @@
 /**
- * The YAML / OpenAPI side of the app, in one of two variants:
+ * The YAML / OpenAPI side of the app. Both variants are complete on their own
+ * (create / manage projects, upload YAML files); they differ only in how the
+ * selected YAML file is shown:
  *
- *   variant="swagger" (Swagger Only page): where projects are created; YAML files
- *     are uploaded; the selected file is shown in Swagger UI.
+ *   variant="swagger" (Swagger Only page): the file in Swagger UI.
  *       Project [select] [manage] [Upload YAML]
  *       ┌ YAML files ┐ ┌ Swagger UI ──────┐
  *
- *   variant="forms" (Side by Side page): upload YAML files, browse and run APIs
- *     (no project creation); the selected API is shown as a generated form.
- *       Project [select] [Upload YAML]
+ *   variant="forms" (Side by Side page): its APIs and a generated form per API.
+ *       Project [select] [manage] [Upload YAML]
  *       ┌ YAML files ┐ ┌ API form ────────┐
  *       │ APIs       │ │ response         │
  */
@@ -21,8 +21,8 @@ import { EndpointList, YamlFileList, ApiOverview } from './Navigator.jsx';
 import OperationForm from './OperationForm.jsx';
 import { ProjectForm, ProjectsModal, UploadReportModal } from './ProjectDialogs.jsx';
 
-export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwagger, hidden, variant = 'forms' }) {
-  // Only the Swagger Only page creates and manages projects; both pages upload YAML files.
+export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden, variant = 'forms' }) {
+  // Only decides Swagger UI vs forms; projects and uploads work the same on every page.
   const swaggerStyle = variant === 'swagger';
   const inputRef = useRef(null);
   const [manageOpen, setManageOpen] = useState(false);
@@ -50,7 +50,7 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwag
               </option>
             ))}
           </Select>
-          {swaggerStyle && <IconButton icon="folder" label="Manage projects" onClick={() => setManageOpen(true)} disabled={!wb.source} />}
+          <IconButton icon="folder" label="Manage projects" onClick={() => setManageOpen(true)} disabled={!wb.source} />
         </div>
         <div className="wb-upload">
           <input
@@ -83,22 +83,6 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwag
       {!wb.source ? (
         <div className="wb-center">
           <EmptyState icon="refresh" title="Connecting to the database…" />
-        </div>
-      ) : noProjects && !swaggerStyle ? (
-        <div className="wb-center">
-          <EmptyState
-            icon="folder"
-            title="No projects yet"
-            action={
-              onOpenSwagger && (
-                <Button variant="primary" icon="api" onClick={onOpenSwagger}>
-                  Go to Swagger Only
-                </Button>
-              )
-            }
-          >
-            Projects are created and YAML files uploaded on the Swagger Only page.
-          </EmptyState>
         </div>
       ) : noProjects ? (
         <div className="wb-center">
@@ -165,7 +149,7 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwag
         </div>
       )}
 
-      {swaggerStyle && <ProjectsModal open={manageOpen} onClose={() => setManageOpen(false)} wb={wb} />}
+      <ProjectsModal open={manageOpen} onClose={() => setManageOpen(false)} wb={wb} />
       <UploadReportModal report={wb.uploadReport} onClose={wb.closeUploadReport} />
     </section>
   );

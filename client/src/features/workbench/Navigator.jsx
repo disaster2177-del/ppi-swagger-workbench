@@ -49,15 +49,7 @@ export function YamlFileList({ wb, onDropFiles }) {
         <p className="nav-empty">Select a project to see its YAML files.</p>
       ) : wb.yamlStatus === 'ready' && !wb.yamlFiles.length ? (
         <p className="nav-empty">
-          {onDropFiles ? (
-            <>
-              No YAML files in this project yet. Use <strong>Upload YAML</strong> or drop files here.
-            </>
-          ) : (
-            <>
-              No YAML files in this project yet. Upload them on the <strong>Swagger Only</strong> page.
-            </>
-          )}
+          No YAML files in this project yet. Use <strong>Upload YAML</strong> or drop files here.
         </p>
       ) : files.length === 0 && q ? (
         <p className="nav-empty">No YAML file matches “{q}”.</p>

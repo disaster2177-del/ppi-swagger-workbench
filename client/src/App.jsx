@@ -114,7 +114,6 @@ function Shell() {
       settings={settings}
       onOpenSettings={openSettings}
       variant={view === 'swagger' ? 'swagger' : 'forms'}
-      onOpenSwagger={() => chooseMode('swagger')}
     />
   );
 
