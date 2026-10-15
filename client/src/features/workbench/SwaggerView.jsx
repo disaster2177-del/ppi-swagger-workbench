@@ -211,7 +211,7 @@ export default function SwaggerView({ wb, settings }) {
   if (!definition) return null;
   return (
     <div className="swagger-host">
-      <div className="swagger-bar">
+      {/* <div className="swagger-bar">
         <span className="muted">
           {viaServer ? (
             <>
@@ -219,12 +219,12 @@ export default function SwaggerView({ wb, settings }) {
             </>
           ) : (
             <>
-              Try it out is sent <strong>from your browser</strong> (DevTools shows the real request). The API must allow CORS.
+              Try it out is sent <strong>from your browser</strong> (DevTools shows the real request). The API must allow CddddORS.
             </>
           )}{' '}
           Base URL and credentials from Settings are applied.
         </span>
-      </div>
+      </div> */}
       {status === 'loading' && <EmptyState icon="refresh" title="Loading Swagger UI…" />}
       {status === 'error' && (
         <EmptyState icon="error" title="Swagger UI could not be loaded">

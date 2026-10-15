@@ -13,11 +13,11 @@ import { toUserError } from '../../services/errors.js';
 import { StoragePanel } from '../workbench/SidebarPanels.jsx';
 
 const SECTIONS = [
-  ['connection', 'Connection', 'globe'],
-  ['request', 'Requests', 'sliders'],
-  ['auth', 'Authentication', 'key'],
-  ['validation', 'YAML validation', 'shield'],
-  ['storage', 'Your workspace', 'folder'],
+  // ['connection', 'Connection', 'globe'],
+  // ['request', 'Requests', 'sliders'],
+  // ['auth', 'Authentication', 'key'],
+  // ['validation', 'YAML validation', 'shield'],
+  // ['storage', 'Your workspace', 'folder'],
 ];
 
 const MODE_TEXT = {
@@ -147,21 +147,21 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
 
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Settings sections">
-          {SECTIONS.map(([id, label, icon]) => (
+          {/* {SECTIONS.map(([id, label, icon]) => (
             <a key={id} href={`#settings-${id}`} onClick={(e) => (e.preventDefault(), document.getElementById(`settings-${id}`)?.scrollIntoView({ behavior: 'smooth' }))}>
               <Icon name={icon} size={14} /> {label}
             </a>
-          ))}
+          ))} */}
         </nav>
 
         <div className="settings-sections">
           {/* ------------------------------------------------------------ connection */}
           <section id="settings-connection" className="settings-section card">
             <h2>Connection</h2>
-            <p className="muted">Requests go to Base URL + Base Path + the endpoint path from the YAML file.</p>
+            {/* <p className="muted">Requests go to Base URL + Base Path + the endpoint path from the YAML file.</p> */}
 
             <div className="env-tabs" role="tablist" aria-label="Environments">
-              {draft.environments.map((e, i) => (
+              {/* {draft.environments.map((e, i) => (
                 <button
                   key={e.id}
                   type="button"
@@ -173,8 +173,8 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                   {e.name || `Environment ${i + 1}`}
                   {e.id === settings.activeEnvironmentId && <span className="dot" title="Active" />}
                 </button>
-              ))}
-              <Button
+              ))} */}
+              {/* <Button
                 size="sm"
                 variant="ghost"
                 icon="plus"
@@ -186,13 +186,13 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                 }}
               >
                 Add environment
-              </Button>
+              </Button> */}
             </div>
 
             <div className="form-grid">
-              <Field id="set-env-name" label="Environment name" error={err(`environments.${envIndex}.name`)}>
+              {/* <Field id="set-env-name" label="Environment name" error={err(`environments.${envIndex}.name`)}>
                 <TextInput id="set-env-name" value={env.name} maxLength={60} onChange={(e) => set(`environments.${envIndex}.name`, e.target.value)} />
-              </Field>
+              </Field> */}
               <Field id="set-base-url" label="Base URL" error={err(`environments.${envIndex}.baseUrl`)} help="Leave empty to use the server named in each YAML file.">
                 <TextInput
                   id="set-base-url"
@@ -202,11 +202,11 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                   onChange={(e) => set(`environments.${envIndex}.baseUrl`, e.target.value)}
                 />
               </Field>
-              <Field id="set-base-path" label="Base Path / Route" error={err(`environments.${envIndex}.basePath`)} help="Added between the Base URL and every endpoint.">
+              {/* <Field id="set-base-path" label="Base Path / Route" error={err(`environments.${envIndex}.basePath`)} help="Added between the Base URL and every endpoint.">
                 <TextInput id="set-base-path" value={env.basePath} placeholder="/api/v1" spellCheck={false} onChange={(e) => set(`environments.${envIndex}.basePath`, e.target.value)} />
-              </Field>
+              </Field> */}
             </div>
-            <div className="url-example">
+            {/* <div className="url-example">
               <span className="eyebrow">Example request URL</span>
               <code>{example}</code>
             </div>
@@ -218,7 +218,7 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                   Usually the Base URL should stop before the endpoint, for example <code>https://api.example.com/v1</code>.
                 </div>
               </div>
-            )}
+            )} */}
             <div className="row-end">
               {draft.environments.length > 1 && (
                 <Button
@@ -236,11 +236,11 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                 </Button>
               )}
             </div>
-            <p className="field-help">The selected environment is the one requests use after you save.</p>
+            {/* <p className="field-help">The selected environment is the one requests use after you save.</p> */}
           </section>
 
           {/* ------------------------------------------------------------ requests */}
-          <section id="settings-request" className="settings-section card">
+          {/* <section id="settings-request" className="settings-section card">
             <h2>Requests</h2>
             <div className="form-grid">
               <Field id="set-timeout" label="Request timeout" help="Requests that take longer are stopped. 1 to 300 seconds." error={err('request.timeoutMs')}>
@@ -313,10 +313,10 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                 Add header
               </Button>
             </div>
-          </section>
+          </section> */}
 
           {/* ------------------------------------------------------------ auth */}
-          <section id="settings-auth" className="settings-section card">
+          {/* <section id="settings-auth" className="settings-section card">
             <h2>Authentication</h2>
             <p className="muted">
               {source?.supportsProxy && draft.request.sendVia === 'server'
@@ -370,10 +370,10 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                 </>
               )}
             </div>
-          </section>
+          </section> */}
 
           {/* ------------------------------------------------------------ validation */}
-          <section id="settings-validation" className="settings-section card">
+          {/* <section id="settings-validation" className="settings-section card">
             <h2>YAML validation</h2>
             <p className="muted">Every uploaded file is checked before it is saved. Files that fail are never stored.</p>
             <fieldset className="choice-cards">
@@ -421,9 +421,9 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
                 </Select>
               </Field>
             </div>
-          </section>
+          </section> */}
 
-          {source && (
+          {/* {source && (
             <section id="settings-storage" className="settings-section card">
               <h2>Your workspace</h2>
               <p className="muted">
@@ -432,7 +432,7 @@ export default function SettingsPage({ wb, exampleEndpointPath, exampleServers =
               </p>
               <StoragePanel wb={wb} />
             </section>
-          )}
+          )} */}
         </div>
       </div>
     </div>

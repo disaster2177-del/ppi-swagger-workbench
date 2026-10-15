@@ -273,7 +273,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
         </div>
       </header>
 
-      {needsAuth && (
+      {/* {needsAuth && (
         <div className="callout warn" role="note">
           <Icon name="key" />
           <div>
@@ -283,7 +283,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       <form className="op-form card" noValidate onSubmit={onSubmit}>
         {!hasInputs && <p className="muted">This API takes no parameters. Press Execute to send it.</p>}
@@ -379,13 +379,13 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
         <section className="op-preview" aria-label="Request URL">
           <div className="op-section-head">
             <h3 className="eyebrow">Request URL</h3>
-            <CopyButton text={preview.url} />
+            {/* <CopyButton text={preview.url} /> */}
           </div>
           <div className="op-url">
             <MethodBadge method={operation.method} />
             <code>{preview.url || operation.path}</code>
           </div>
-          <p className="field-help">
+          {/* <p className="field-help">
             {baseSource ? (
               <>
                 {baseSource}
@@ -401,7 +401,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
               </>
             )}
             {preview.unresolvedPath && <span className="text-warn">Fill in every path parameter.</span>}
-          </p>
+          </p> */}
           {dup && (
             <div className="callout warn" role="note">
               <Icon name="alert" />
@@ -416,7 +416,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
               </div>
             </div>
           )}
-          <p className="field-help send-via">
+          {/* <p className="field-help send-via">
             {sentVia() === 'server' ? (
               <>
                 <Icon name="globe" size={12} /> Sent through the server (DevTools shows <code>POST /api/workbench/execute</code>).
@@ -431,16 +431,16 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
                 Change
               </button>
             )}
-          </p>
+          </p> */}
         </section>
 
         <div className="op-actions">
           <div className="op-actions-left">
             {hasInputs && (
               <>
-                <Button variant="ghost" size="sm" icon="refresh" onClick={fillSample} disabled={sending}>
+                {/* <Button variant="ghost" size="sm" icon="refresh" onClick={fillSample} disabled={sending}>
                   Use sample data
-                </Button>
+                </Button> */}
                 <Button variant="ghost" size="sm" onClick={reset} disabled={sending}>
                   Reset
                 </Button>

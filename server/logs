@@ -1,0 +1,41 @@
+
+
+594104f096da   provectuslabs/kafka-ui:v0.7.2   "/bin/sh -c 'java --…"   4 minutes ago   Up 4 minutes                127.0.0.1:8080->8080/tcp     ppi-swagger-workbench-kafka-ui-1
+bb146e78e77d   ppi-swagger-workbench-app       "docker-entrypoint.s…"   4 days ago      Exited (137) 17 hours ago                                ppi-workbench
+979089dadfb8   apache/kafka:3.9.0              "/__cacert_entrypoin…"   4 days ago      Up 19 minutes (healthy)     127.0.0.1:9092->9092/tcp     kafka
+f33a08f836bf   mongo:7                         "docker-entrypoint.s…"   4 days ago      Up 19 minutes               127.0.0.1:27017->27017/tcp   mongo
+
+docker compose --profile tools up -d kafka-ui
+npm run simulate
+
+
+
+
+
+
+
+
+
+
+
+npm run start
+
+> @workbench/server@1.0.0 start
+> node src/index.js
+
+2026-10-14T04:07:20.424Z INFO  MongoDB connected (localhost/naval_geometry)
+2026-10-14T04:07:20.491Z INFO  Restored 4 objects from MongoDB
+2026-10-14T04:07:20.494Z INFO  Settings stored in MongoDB (app_settings)
+2026-10-14T04:07:20.506Z INFO  API + WebSocket listening on *:4000
+(node:15038) TimeoutNegativeWarning: -1791950840770 is a negative number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"level":"ERROR","timestamp":"2026-10-14T04:07:21.321Z","logger":"kafkajs","message":"[Connection] Response CreateTopics(key: 19, version: 3)","broker":"localhost:9092","clientId":"naval-geometry-server","error":"Topic creation errors","correlationId":2,"size":388}
+2026-10-14T04:07:21.558Z INFO  Kafka consumer running on [radar.geometry, radar.tracks, radar.ownship, radar.legacy-plots, radar.nmea, ais.nmea, c2.zones]
+2026-10-14T04:08:06.145Z INFO  UI client connected (G14l9-8jLut7IUczAAAA), 1 total
+
+
+
+
+
+

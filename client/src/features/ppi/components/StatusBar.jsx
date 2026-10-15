@@ -21,9 +21,8 @@ export default function StatusBar({ connection, status, objectCount, now }) {
           <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.6" />
           <path d="M16 16 L26 6" stroke="currentColor" strokeWidth="2" />
         </svg>
-        PPI · NAVAL RADAR GEOMETRY
       </span>
-      <div className="status-items">
+      {/* <div className="status-items">
         {kafka?.state === 'demo' ? (
           <span className="demo-note">Demo: the simulated Kafka feed runs in your browser</span>
         ) : (
@@ -51,7 +50,7 @@ export default function StatusBar({ connection, status, objectCount, now }) {
           LAST MSG <b>{lastMsgAge === null ? '—' : `${lastMsgAge}s`}</b>
         </span>
         <span className="stat mono">{new Date(now).toISOString().slice(11, 19)}Z</span>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -80,7 +80,7 @@ function Shell() {
           { id: 'rejected', label: 'Rejected', count: ppi.rejectedCount },
         ]
       : []),
-    { id: 'activity', label: 'Activity', icon: 'activity' },
+    // { id: 'activity', label: 'Activity', icon: 'activity' },
   ];
   const lt = leftTabs.some((t) => t.id === leftTab) ? leftTab : leftTabs[0].id;
   const rt = rightTabs.some((t) => t.id === rightTab) ? rightTab : rightTabs[0].id;
@@ -141,13 +141,16 @@ function Shell() {
           onTab={setLeftTab}
           onClose={toggleLeft}
         >
-          {lt === 'scope' ? (
-            <div className="ppi-panel">
-              <ScopeControls {...ppi.controlsProps} />
-            </div>
+           <div className="ppi-panel">
+            <ScopeControls {...ppi.controlsProps} />
+         
+         </div>
+          {/* {lt === 'scope' ? (
+            <div className="ppi-panel"> */}
+            {/* </div>
           ) : (
             <ProjectsPanel wb={wb} canCreate={view === 'swagger'} />
-          )}
+          )} */}
         </Sidebar>
 
         <main className="app-main" id="main">
@@ -196,7 +199,7 @@ function Shell() {
               <ErrorLog />
             </div>
           )}
-          {rt === 'activity' && <ActivityPanel wb={wb} />}
+          {/* {rt === 'activity' && <ActivityPanel wb={wb} />} */}
         </Sidebar>
       </div>
     </div>

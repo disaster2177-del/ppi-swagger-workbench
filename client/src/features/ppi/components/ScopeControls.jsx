@@ -34,14 +34,14 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
             Turf.js
           </button>
         </div>
-        <p className="engine-hint">
+        {/* <p className="engine-hint">
           {settings.engine === 'turf'
             ? 'Geodesic shapes and exact range/bearing at any distance, plus zone alerts.'
             : 'Flat local projection. Accurate to about 100 m at 48 NM.'}
-        </p>
+        </p> */}
       </section>
 
-      <section>
+      {/* <section>
         <h3>Range (NM)</h3>
         <div className="btn-row wrap">
           {RANGE_STEPS.map((r) => (
@@ -50,9 +50,9 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
             </button>
           ))}
         </div>
-      </section>
+      </section> */}
 
-      <section>
+      {/* <section>
         <h3>Orientation</h3>
         <div className="btn-row">
           <button className={settings.orientation === 'NORTH_UP' ? 'active' : ''} onClick={() => set({ orientation: 'NORTH_UP' })}>
@@ -65,7 +65,7 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
             Centre
           </button>
         </div>
-      </section>
+      </section> */}
 
       <section>
         <h3>Display</h3>
@@ -80,7 +80,7 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
             {label}
           </label>
         ))}
-        <label className="check">
+        {/* <label className="check">
           Leader length
           <select value={settings.leaderMinutes} onChange={(e) => set({ leaderMinutes: Number(e.target.value) })}>
             {[1, 3, 6, 12, 30].map((m) => (
@@ -89,7 +89,7 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
               </option>
             ))}
           </select>
-        </label>
+        </label> */}
       </section>
 
       <section>
