@@ -34,7 +34,7 @@ Both share one shell, one dark theme, one set of components and one Express serv
 
 **Each view has one job:**
 
-- **Swagger Only** shows the selected file is shown in the official Swagger UI (`swagger-ui-dist`, in its dark mode) with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
+- **Swagger Only** shows the selected file in the official Swagger UI (`swagger-ui-dist`, in its dark mode) with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
 - **Side by Side** shows the YAML file's APIs next to the PPI, and runs each one from the generated **form** described below.
 
 Both pages are complete on their own: each can create and manage projects (Manage projects, Load example projects, New project in the sidebar) and upload YAML files (Upload YAML, drag and drop). Hiding one page in `client/src/shell/TopNav.jsx` leaves the other fully usable.
