@@ -12,13 +12,10 @@ export default function PpiPane({ ppi }) {
     <section className="ppi-pane" aria-label="PPI radar display">
       <StatusBar connection={ppi.connection} status={ppi.status} objectCount={ppi.objectCount} now={ppi.now} />
       <div className="ppi-scope-wrap">
-        {scopeProps.settings.engine === 'turf' ? (
           <Suspense fallback={<div className="scope-loading">Loading Turf.js engine…</div>}>
             <TurfRadarScope {...scopeProps} />
           </Suspense>
-        ) : (
-          <RadarScope {...scopeProps} />
-        )}
+       
       </div>
     </section>
   );

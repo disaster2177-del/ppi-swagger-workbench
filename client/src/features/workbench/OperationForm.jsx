@@ -199,7 +199,7 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
       patch({ response: { ...result, request: preview, at: started } });
       wb.recordExecution({ at: started, method: operation.method, path: preview.path, status: result.status, ok: result.ok, durationMs: result.durationMs, yamlFileId: wb.yamlFileId, endpointKey: operation.id, fileName: detail.file.fileName });
       if (result.ok) {
-        toast.success(`${result.status} ${result.statusText || 'OK'}`, { message: `${MESSAGES.REQUEST_OK} ${operation.method} ${preview.path} · ${result.durationMs} ms` });
+        // toast.success(`${result.status} ${result.statusText || 'OK'}`, { message: `${MESSAGES.REQUEST_OK} ${operation.method} ${preview.path} · ${result.durationMs} ms` });
       } else {
         const d = describeHttpStatus(result.status);
         toast.error(MESSAGES.REQUEST_FAILED, { message: `${result.status} ${result.statusText ?? ''} — ${d?.title ?? ''}. ${d?.hint ?? ''}`.trim() });
@@ -377,14 +377,13 @@ export default function OperationForm({ wb, settings, onOpenSettings }) {
         )}
 
         <section className="op-preview" aria-label="Request URL">
-          <div className="op-section-head">
+          {/* <div className="op-section-head">
             <h3 className="eyebrow">Request URL</h3>
-            {/* <CopyButton text={preview.url} /> */}
           </div>
           <div className="op-url">
             <MethodBadge method={operation.method} />
             <code>{preview.url || operation.path}</code>
-          </div>
+          </div> */}
           {/* <p className="field-help">
             {baseSource ? (
               <>

@@ -141,7 +141,7 @@ export default function TurfRadarScope({
 
           <g clipPath="url(#turf-scope-clip)">
             <RangeRings view={view} />
-            {settings.showSweep && <Sweep view={view} />}
+            {/* {settings.showSweep && <Sweep view={view} />} */}
 
             {sorted.map((o) => (
               <TurfShape

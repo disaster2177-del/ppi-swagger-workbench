@@ -42,9 +42,9 @@ export function ProjectForm({ initial, onSubmit, submitLabel, onCancel }) {
       <Field id={nameId} label="Project name" required error={error}>
         <TextInput id={nameId} value={name} maxLength={80} placeholder="e.g. Payment Service" onChange={(e) => setName(e.target.value)} />
       </Field>
-      <Field id={descId} label="Description" optional>
+      {/* <Field id={descId} label="Description" optional>
         <Textarea id={descId} rows={2} value={description} maxLength={500} onChange={(e) => setDescription(e.target.value)} />
-      </Field>
+      </Field> */}
       <div className="row-end">
         {onCancel && (
           <Button variant="ghost" onClick={onCancel}>

@@ -98,7 +98,7 @@ function HeaderTable({ rows }) {
 
 export default function ResponseViewer({ response, onClear, onRetry, retrying }) {
   const [tab, setTab] = useState('body');
-  const [view, setView] = useState('auto');
+  const [view, setView] = useState('raw');
   const curlRef = useRef(null);
   const req = response.request;
   const curl = useMemo(() => (req ? toCurl(req) : ''), [req]);
@@ -117,11 +117,11 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
           <div>
             <strong>API request failed.</strong>
             <div>{response.failure.message}</div>
-            {response.failure.details?.url && (
+            {/* {response.failure.details?.url && (
               <div className="failure-url">
                 <span className="muted">Request URL</span> <code>{response.failure.details.url}</code>
               </div>
-            )}
+            )} */}
             {onRetry && (
               <div className="failure-actions">
                 <Button size="sm" icon="globe" onClick={onRetry.run} loading={retrying}>
@@ -163,12 +163,12 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
     <section className="response card" aria-label="Response">
       <div className="response-head">
         <div className="response-status">
-          <StatusCode status={response.status} />
+          {/* <StatusCode status={response.status} />
           <span className="response-text">{response.statusText}</span>
           <span className="muted tabular">{response.durationMs} ms</span>
           <span className="muted tabular">{formatBytes(response.sizeBytes)}</span>
           {response.viaProxy ? <Badge tone="info">sent through the server</Badge> : <Badge>sent from your browser</Badge>}
-          {response.truncated && <Badge tone="warn">truncated at 5 MB</Badge>}
+          {response.truncated && <Badge tone="warn">truncated at 5 MB</Badge>} */}
         </div>
         <Button size="sm" variant="ghost" icon="x" onClick={onClear}>
           Clear
@@ -185,7 +185,7 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
         </div>
       )}
 
-      <Tabs
+      {/* <Tabs
         label="Response sections"
         value={tab}
         onChange={setTab}
@@ -194,7 +194,7 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
           { id: 'headers', label: `Headers (${response.headers.length})` },
           { id: 'request', label: 'Request' },
         ]}
-      />
+      /> */}
 
       {tab === 'body' && (
         <div className="response-panel">
@@ -205,13 +205,13 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
           ) : json.ok ? (
             <>
               <div className="response-tools">
-                <Tabs
+                {/* <Tabs
                   label="Body view"
                   value={effectiveView}
                   onChange={setView}
                   items={[...(tableRows ? [{ id: 'table', label: 'Table' }] : []), { id: 'pretty', label: 'JSON' }, { id: 'raw', label: 'Raw' }]}
-                />
-                <CopyButton text={response.body} />
+                /> */}
+                {/* <CopyButton text={response.body} /> */}
               </div>
               {effectiveView === 'table' && tableRows ? (
                 <ResultTable rows={tableRows} />
@@ -223,7 +223,7 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
             <>
               <div className="response-tools">
                 <span className="muted">{response.contentType}</span>
-                <CopyButton text={response.body} />
+                {/* <CopyButton text={response.body} /> */}
               </div>
               <pre className="code-block">{response.body}</pre>
             </>
@@ -258,7 +258,7 @@ export default function ResponseViewer({ response, onClear, onRetry, retrying })
           )}
           <div className="response-tools">
             <h4 className="eyebrow">curl</h4>
-            <CopyButton text={curl} targetRef={curlRef} />
+            {/* <CopyButton text={curl} targetRef={curlRef} /> */}
           </div>
           <pre className="code-block" ref={curlRef}>
             {curl}

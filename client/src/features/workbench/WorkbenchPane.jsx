@@ -93,12 +93,12 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, hidden, va
               YAML files always belong to a project. Create one, then upload its YAML files. Everything is saved in this browser only.
             </p>
             <ProjectForm submitLabel="Create project" onSubmit={(d) => wb.createProject(d)} />
-            <div className="first-run-alt">
+            {/* <div className="first-run-alt">
               <span className="muted">or</span>
               <Button size="sm" variant="ghost" icon="folder" onClick={wb.loadSamples}>
                 Load example projects
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       ) : (

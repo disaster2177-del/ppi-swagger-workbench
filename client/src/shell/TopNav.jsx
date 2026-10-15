@@ -2,8 +2,8 @@ import { Badge, Icon, IconButton } from '../ui/index.jsx';
 
 const VIEW_MODES = [
   // { id: 'ppi', label: 'PPI Only', icon: 'radar' },
-  { id: 'split', label: 'Side by Side', icon: 'split' },
-  { id: 'swagger', label: 'Swagger Only', icon: 'api' },
+  { id: 'split', label: 'PPI + YAML', icon: 'split' },
+  // { id: 'swagger', label: 'Swagger Only', icon: 'api' },
 ];
 
 export default function TopNav({ mode, page, onMode, onSettings, leftOpen, rightOpen, onToggleLeft, onToggleRight, source }) {
@@ -25,7 +25,7 @@ export default function TopNav({ mode, page, onMode, onSettings, leftOpen, right
         </svg> */}
         {/* <span className="brand-text">
           PPI <span className="brand-amp">&amp;</span> Swagger
-        </span> */}PPI + YMAL FORM
+        </span> */}
       </div>
 
       <nav className="viewnav" aria-label="View mode">
@@ -33,7 +33,6 @@ export default function TopNav({ mode, page, onMode, onSettings, leftOpen, right
           const active = page === 'workspace' && mode === m.id;
           return (
             <button key={m.id} type="button" className={active ? 'active' : ''} aria-current={active ? 'page' : undefined} aria-label={m.label} title={m.label} onClick={() => onMode(m.id)}>
-              {/* <Icon name={m.icon} size={15} /> */}
               <span className="viewnav-label">{m.label}</span>
             </button>
           );
