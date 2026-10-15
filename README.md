@@ -34,8 +34,8 @@ Both share one shell, one dark theme, one set of components and one Express serv
 
 **Each view has one job:**
 
-- **Swagger Only** is where you **create projects and upload YAML files** (Upload YAML, drag and drop, Manage projects, Load example projects, New project in the sidebar). The selected file is shown in the official Swagger UI (`swagger-ui-dist`, in its dark mode) with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
-- **Side by Side** is for browsing and running APIs next to the PPI: pick a project and a YAML file, then an API, and run it from the generated **form** described below. There is no upload or project creation here; when a project is empty, a button takes you to Swagger Only.
+- **Swagger Only** is where you **create and manage projects** and upload YAML files (Upload YAML, drag and drop, Manage projects, Load example projects, New project in the sidebar). The selected file is shown in the official Swagger UI (`swagger-ui-dist`, in its dark mode) with tags, *Try it out*, *Authorize*, webhooks, examples and the **Schemas** section. Settings still apply: Base URL / Base Path become the first server, default headers and credentials are added, and *Send requests from: The server* routes *Try it out* through the VM.
+- **Side by Side** is for working next to the PPI: pick a project, **upload YAML files** (button or drag and drop), pick a file and an API, and run it from the generated **form** described below. Projects are created on Swagger Only.
 
 **Dynamic forms.** Everything is read from the YAML. Nothing about a particular API is in the code.
 

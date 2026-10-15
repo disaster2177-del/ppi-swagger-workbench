@@ -1,14 +1,14 @@
 /**
  * The YAML / OpenAPI side of the app, in one of two variants:
  *
- *   variant="swagger" (Swagger Only page): where projects are created and YAML
- *     files uploaded; the selected file is shown in Swagger UI.
+ *   variant="swagger" (Swagger Only page): where projects are created; YAML files
+ *     are uploaded; the selected file is shown in Swagger UI.
  *       Project [select] [manage] [Upload YAML]
  *       ┌ YAML files ┐ ┌ Swagger UI ──────┐
  *
- *   variant="forms" (Side by Side page): browse and run only, no upload or
- *     project creation; the selected API is shown as a generated form.
- *       Project [select]
+ *   variant="forms" (Side by Side page): upload YAML files, browse and run APIs
+ *     (no project creation); the selected API is shown as a generated form.
+ *       Project [select] [Upload YAML]
  *       ┌ YAML files ┐ ┌ API form ────────┐
  *       │ APIs       │ │ response         │
  */
@@ -22,7 +22,7 @@ import OperationForm from './OperationForm.jsx';
 import { ProjectForm, ProjectsModal, UploadReportModal } from './ProjectDialogs.jsx';
 
 export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwagger, hidden, variant = 'forms' }) {
-  // Only the Swagger Only page creates projects and uploads YAML files.
+  // Only the Swagger Only page creates and manages projects; both pages upload YAML files.
   const swaggerStyle = variant === 'swagger';
   const inputRef = useRef(null);
   const [manageOpen, setManageOpen] = useState(false);
@@ -52,34 +52,32 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwag
           </Select>
           {swaggerStyle && <IconButton icon="folder" label="Manage projects" onClick={() => setManageOpen(true)} disabled={!wb.source} />}
         </div>
-        {swaggerStyle && (
-          <div className="wb-upload">
-            <input
-              ref={inputRef}
-              type="file"
-              multiple
-              accept={accept}
-              hidden
-              onChange={(e) => {
-                const files = e.target.files;
-                wb.uploadFiles(files).finally(() => {
-                  e.target.value = '';
-                });
-              }}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              icon="upload"
-              disabled={!wb.projectId || !!wb.uploading}
-              loading={!!wb.uploading}
-              title={wb.projectId ? 'Choose one or more YAML files' : 'Select a project first'}
-              onClick={() => inputRef.current?.click()}
-            >
-              {wb.uploading ? `Uploading ${wb.uploading.count} file${wb.uploading.count === 1 ? '' : 's'}…` : 'Upload YAML'}
-            </Button>
-          </div>
-        )}
+        <div className="wb-upload">
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept={accept}
+            hidden
+            onChange={(e) => {
+              const files = e.target.files;
+              wb.uploadFiles(files).finally(() => {
+                e.target.value = '';
+              });
+            }}
+          />
+          <Button
+            variant="primary"
+            size="sm"
+            icon="upload"
+            disabled={!wb.projectId || !!wb.uploading}
+            loading={!!wb.uploading}
+            title={wb.projectId ? 'Choose one or more YAML files' : 'Select a project first'}
+            onClick={() => inputRef.current?.click()}
+          >
+            {wb.uploading ? `Uploading ${wb.uploading.count} file${wb.uploading.count === 1 ? '' : 's'}…` : 'Upload YAML'}
+          </Button>
+        </div>
       </header>
 
       {!wb.source ? (
@@ -122,7 +120,7 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwag
       ) : (
         <div className={`wb-body${swaggerStyle ? ' swagger-style' : ''}`}>
           <nav className="wb-nav" aria-label={swaggerStyle ? 'YAML files' : 'YAML files and APIs'}>
-            <YamlFileList wb={wb} onDropFiles={swaggerStyle ? wb.uploadFiles : null} />
+            <YamlFileList wb={wb} onDropFiles={wb.uploadFiles} />
             {!swaggerStyle && <EndpointList wb={wb} />}
           </nav>
           <div className="wb-main">
@@ -135,27 +133,18 @@ export default function WorkbenchPane({ wb, settings, onOpenSettings, onOpenSwag
                 icon="file"
                 title={wb.yamlFiles.length ? 'Select a YAML file' : 'Upload YAML files'}
                 action={
-                  !wb.yamlFiles.length &&
-                  (swaggerStyle ? (
+                  !wb.yamlFiles.length && (
                     <Button variant="primary" icon="upload" onClick={() => inputRef.current?.click()}>
                       Upload YAML
                     </Button>
-                  ) : (
-                    onOpenSwagger && (
-                      <Button variant="primary" icon="api" onClick={onOpenSwagger}>
-                        Go to Swagger Only
-                      </Button>
-                    )
-                  ))
+                  )
                 }
               >
                 {wb.yamlFiles.length
                   ? swaggerStyle
                     ? 'It opens in Swagger UI.'
                     : 'Its APIs are listed once it opens.'
-                  : swaggerStyle
-                    ? `Add one or more .yaml files to ${wb.project?.name ?? 'this project'}. Each file is checked before it is saved.`
-                    : `${wb.project?.name ?? 'This project'} has no YAML files yet. Upload them on the Swagger Only page.`}
+                  : `Add one or more .yaml files to ${wb.project?.name ?? 'this project'}. Each file is checked before it is saved.`}
               </EmptyState>
             ) : wb.detailStatus === 'loading' && !wb.detail?.model ? (
               <EmptyState icon="refresh" title="Opening YAML file…" />
